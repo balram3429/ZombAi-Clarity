@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Large Language Models | ZombAI-Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .page-title span { background:linear-gradient(90deg,var(--accent3),#C084FC); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .token-strip { display:flex; gap:8px; flex-wrap:wrap; padding:20px; justify-content:center; }
+  .token {
+    background: rgba(123,97,255,0.15);
+    border: 1px solid rgba(123,97,255,0.4);
+    color: #C084FC;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .token.active {
+    background: rgba(123,97,255,0.4);
+    box-shadow: 0 0 20px rgba(123,97,255,0.5);
+    transform: translateY(-4px);
+  }
+  .attention-grid {
+    display: grid;
+    gap: 3px;
+    padding: 20px;
+    justify-content: center;
+  }
+  .attention-cell {
+    width: 40px; height: 40px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.4);
+    transition: all 0.5s;
+  }
+  .arch-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    margin: 6px 0;
+    transition: all 0.4s;
+    position: relative;
+  }
+  .arch-block.highlight {
+    border-color: var(--accent3);
+    background: rgba(123,97,255,0.1);
+    box-shadow: 0 0 20px rgba(123,97,255,0.2);
+  }
+  .arch-arrow {
+    text-align: center;
+    color: var(--muted);
+    font-size: 1.1rem;
+    margin: 2px 0;
+  }
+  .transformer-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .arch-label {
+    font-family: 'Syne', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent3);
+    text-align: center;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .scale-timeline {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    padding: 20px;
+    justify-content: center;
+  }
+  .scale-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .scale-bar-fill {
+    width: 50px;
+    background: linear-gradient(to top, var(--accent3), #C084FC);
+    border-radius: 4px 4px 0 0;
+    transition: height 1s ease;
+  }
+  .scale-bar-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-align: center;
+    max-width: 60px;
+  }
+  .scale-bar-num {
+    font-family: 'Syne', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent3);
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <div class="nav-links">
+    <a href="fundamentals.html">Fundamentals</a>
+    <a href="llm.html" class="active">LLMs</a>
+    <a href="rag.html">RAG</a>
+    <a href="genai.html">Generative AI</a>
+    <a href="agentic.html">Agentic AI</a>
+    <a href="resources.html" class="nav-cta">Resources</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Module 02</div>
+  <h1 class="page-title"><span>Large Language<br>Models</span></h1>
+  <p class="page-sub">How do transformers generate coherent text? How does attention work? Why is scale important? All answered here.</p>
+</div>
+
+<div class="content-section">
+
+  <!-- TOKENIZATION -->
+  <div class="concept-block scroll-reveal">
+    <h2>🔤 Tokenization — Breaking Language Apart</h2>
+    <p>LLMs don't read words — they read tokens. A token is roughly 4 characters. The sentence "The cat sat on the mat" becomes a sequence of numeric IDs that the model processes. Hover or watch the animation below.</p>
+    <div class="anim-container">
+      <div class="anim-label">Tokenization — Word → Token IDs</div>
+      <div class="token-strip" id="tokenStrip">
+        <div class="token" data-id="464">The</div>
+        <div class="token" data-id="4141">▁trans</div>
+        <div class="token" data-id="16312">former</div>
+        <div class="token" data-id="1942">▁model</div>
+        <div class="token" data-id="9364">▁pred</div>
+        <div class="token" data-id="9774">icts</div>
+        <div class="token" data-id="278">▁the</div>
+        <div class="token" data-id="1473">▁next</div>
+        <div class="token" data-id="3993">▁token</div>
+      </div>
+      <div style="text-align:center; font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); padding-bottom:12px;" id="tokenIdDisplay">← watch tokens activate one by one</div>
+    </div>
+  </div>
+
+  <!-- TRANSFORMER ARCHITECTURE -->
+  <div class="concept-block scroll-reveal">
+    <h2>⚙ The Transformer Architecture</h2>
+    <p>Introduced in "Attention Is All You Need" (2017), transformers replaced RNNs entirely. The key insight: process all tokens in parallel using attention instead of sequentially.</p>
+    <div class="anim-container" style="padding:30px">
+      <div class="anim-label">Transformer Block</div>
+      <div class="transformer-cols">
+        <div>
+          <div class="arch-label">Encoder Path</div>
+          <div class="arch-block" id="ab0">Input Embeddings + Positional Encoding</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab1">Multi-Head Self-Attention</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab2">Add & Layer Norm</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab3">Feed-Forward Network</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab4">Add & Layer Norm</div>
+        </div>
+        <div>
+          <div class="arch-label">Decoder Path</div>
+          <div class="arch-block" id="ab5">Output Embeddings (shifted)</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab6">Masked Multi-Head Attention</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab7">Cross-Attention (enc+dec)</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab8">Feed-Forward + Norm</div>
+          <div class="arch-arrow">↓</div>
+          <div class="arch-block" id="ab9">Linear + Softmax → Token</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTENTION MECHANISM -->
+  <div class="concept-block scroll-reveal">
+    <h2>👁 Self-Attention — How Tokens Talk to Each Other</h2>
+    <p>Attention allows every token to "look at" every other token and decide how much to pay attention to it. The result: the model understands context and relationships across the entire sequence simultaneously.</p>
+    <div class="anim-container">
+      <div class="anim-label">Attention Matrix — darker = more attention</div>
+      <canvas id="attentionCanvas" height="280"></canvas>
+    </div>
+    <div class="highlight-box">
+      Attention(Q,K,V) = softmax( Q·Kᵀ / √dₖ ) · V<br>
+      <span style="color:var(--muted); font-size:0.75rem">Q=Queries, K=Keys, V=Values — all learned linear projections</span>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-card-num">Q</div><h3>Query</h3><p>"What am I looking for?" — Each token asks a question about which other tokens are relevant to it.</p></div>
+      <div class="step-card"><div class="step-card-num">K</div><h3>Key</h3><p>"What do I offer?" — Each token broadcasts what information it contains.</p></div>
+      <div class="step-card"><div class="step-card-num">V</div><h3>Value</h3><p>"What do I give?" — The actual information passed along when attention is high.</p></div>
+    </div>
+  </div>
+
+  <!-- SCALE -->
+  <div class="concept-block scroll-reveal">
+    <h2>📈 The Scale Revolution</h2>
+    <p>More parameters + more data + more compute = emergent capabilities. The jump from millions to billions of parameters wasn't just quantitative — it was qualitative. Models began reasoning, coding, and translating without explicit training.</p>
+    <div class="anim-container" style="padding:30px">
+      <div class="anim-label">Parameter Scale Over Time</div>
+      <div class="scale-timeline" id="scaleViz">
+        <div class="scale-bar"><div class="scale-bar-fill" style="height:20px"></div><span class="scale-bar-num">117M</span><span class="scale-bar-label">GPT-1 2018</span></div>
+        <div class="scale-bar"><div class="scale-bar-fill" style="height:50px"></div><span class="scale-bar-num">1.5B</span><span class="scale-bar-label">GPT-2 2019</span></div>
+        <div class="scale-bar"><div class="scale-bar-fill" style="height:100px"></div><span class="scale-bar-num">175B</span><span class="scale-bar-label">GPT-3 2020</span></div>
+        <div class="scale-bar"><div class="scale-bar-fill" style="height:140px"></div><span class="scale-bar-num">540B</span><span class="scale-bar-label">PaLM 2022</span></div>
+        <div class="scale-bar"><div class="scale-bar-fill" style="height:170px"></div><span class="scale-bar-num">1T+</span><span class="scale-bar-label">GPT-4 est. 2023</span></div>
+        <div class="scale-bar"><div class="scale-bar-fill" style="height:190px; background:linear-gradient(to top,#00FFB2,#00C8FF)"></div><span class="scale-bar-num">?</span><span class="scale-bar-label">Future 2025+</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RLHF -->
+  <div class="concept-block scroll-reveal">
+    <h2>🎯 RLHF — Making Models Actually Useful</h2>
+    <p>Raw LLMs generate text, not helpful responses. Reinforcement Learning from Human Feedback (RLHF) aligns model outputs with human preferences — this is how ChatGPT, Claude, and Gemini are trained to be assistants.</p>
+    <div class="anim-container">
+      <div class="anim-label">RLHF Training Pipeline</div>
+      <canvas id="rlhfCanvas" height="180"></canvas>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-card-num">1</div><h3>Supervised Fine-tuning</h3><p>Train on human-written demonstrations of ideal behavior.</p></div>
+      <div class="step-card"><div class="step-card-num">2</div><h3>Reward Model</h3><p>Humans rank outputs; a reward model learns what "good" means.</p></div>
+      <div class="step-card"><div class="step-card-num">3</div><h3>PPO Training</h3><p>Use RL to optimize the LLM to maximize the reward model's score.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="module-nav">
+  <a href="fundamentals.html"><span class="nav-dir">← Previous</span><span class="nav-title">AI Fundamentals</span></a>
+  <a href="rag.html" class="next"><span class="nav-dir">Next Module →</span><span class="nav-title">RAG Systems</span></a>
+</div>
+
+<footer>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <p>© 2025 ZombAI-Clarity · Free to learn, free to share</p>
+</footer>
+
+<script>
+// Token animation
+const tokens = document.querySelectorAll('.token');
+let ti = 0;
+function animateTokens() {
+  tokens.forEach(t => t.classList.remove('active'));
+  tokens[ti].classList.add('active');
+  document.getElementById('tokenIdDisplay').textContent = 'Token ID: ' + tokens[ti].dataset.id + ' → "' + tokens[ti].textContent.trim() + '"';
+  ti = (ti+1)%tokens.length;
+}
+setInterval(animateTokens, 700);
+
+// Transformer block highlight
+const archBlocks = Array.from({length:10},(_,i)=>document.getElementById('ab'+i));
+let ab = 0;
+setInterval(()=>{
+  archBlocks.forEach(b=>{if(b)b.classList.remove('highlight')});
+  if(archBlocks[ab])archBlocks[ab].classList.add('highlight');
+  ab=(ab+1)%archBlocks.length;
+}, 500);
+
+// Attention heatmap
+const attnCanvas = document.getElementById('attentionCanvas');
+const attnCtx = attnCanvas.getContext('2d');
+const words = ['The','transformer','model','predicts','the','next','token'];
+let attnMatrix = [];
+let attnFrame = 0;
+
+function initAttn() {
+  const n = words.length;
+  attnMatrix = Array.from({length:n},()=>Array.from({length:n},()=>Math.random()));
+  // Normalize rows
+  attnMatrix = attnMatrix.map(row=>{
+    const sum=row.reduce((a,b)=>a+b,0);
+    return row.map(v=>v/sum);
+  });
+}
+initAttn();
+setInterval(initAttn, 2500);
+
+function drawAttn() {
+  const W = attnCanvas.offsetWidth||700, H=280;
+  attnCanvas.width=W; attnCanvas.height=H;
+  attnCtx.clearRect(0,0,W,H);
+  const n=words.length;
+  const cellSize = Math.min(Math.floor((W-120)/n), 36);
+  const offsetX = (W-(cellSize*n+80))/2+80;
+  const offsetY = 40;
+  // Y labels
+  words.forEach((w,i)=>{
+    attnCtx.fillStyle='rgba(255,255,255,0.5)';
+    attnCtx.font='11px Space Mono,monospace';
+    attnCtx.textAlign='right';
+    attnCtx.fillText(w, offsetX-8, offsetY+i*cellSize+cellSize/2+4);
+  });
+  // X labels
+  words.forEach((w,i)=>{
+    attnCtx.save();
+    attnCtx.translate(offsetX+i*cellSize+cellSize/2, offsetY-6);
+    attnCtx.rotate(-Math.PI/4);
+    attnCtx.fillStyle='rgba(255,255,255,0.5)';
+    attnCtx.font='11px Space Mono,monospace';
+    attnCtx.textAlign='right';
+    attnCtx.fillText(w,0,0);
+    attnCtx.restore();
+  });
+  // Cells
+  attnMatrix.forEach((row,i)=>{
+    row.forEach((val,j)=>{
+      const x=offsetX+j*cellSize, y=offsetY+i*cellSize;
+      const alpha=0.1+val*0.85;
+      attnCtx.fillStyle=`rgba(123,97,255,${alpha})`;
+      attnCtx.fillRect(x+1,y+1,cellSize-2,cellSize-2);
+      if(val>0.25){
+        attnCtx.fillStyle='rgba(255,255,255,0.7)';
+        attnCtx.font='9px Space Mono,monospace';
+        attnCtx.textAlign='center';
+        attnCtx.fillText(val.toFixed(2),x+cellSize/2,y+cellSize/2+3);
+      }
+    });
+  });
+  attnFrame++;
+  requestAnimationFrame(drawAttn);
+}
+drawAttn();
+
+// RLHF pipeline
+const rlhfCanvas = document.getElementById('rlhfCanvas');
+const rCtx = rlhfCanvas.getContext('2d');
+let rStep = 0;
+const rlhfSteps = [
+  {label:'Pretrain LLM\non Web Text', color:'#7B61FF'},
+  {label:'Human Writes\nDemonstrations', color:'#00FFB2'},
+  {label:'Supervised\nFine-Tuning', color:'#00C8FF'},
+  {label:'Compare\nOutputs', color:'#FFD60A'},
+  {label:'Train\nReward Model', color:'#FF3D71'},
+  {label:'PPO /\nRL Training', color:'#00FFB2'},
+  {label:'Aligned\nAssistant ✓', color:'#00FFB2'},
+];
+function drawRLHF(){
+  const W=rlhfCanvas.offsetWidth||700, H=180;
+  rlhfCanvas.width=W; rlhfCanvas.height=H;
+  rCtx.clearRect(0,0,W,H);
+  const n=rlhfSteps.length;
+  const boxW=Math.min(80,(W-60)/(n+0.5));
+  const totalW=n*boxW+(n-1)*16;
+  const startX=(W-totalW)/2;
+  rlhfSteps.forEach((s,i)=>{
+    const x=startX+i*(boxW+16);
+    const isActive=i===rStep;
+    const alpha=isActive?1:0.4;
+    rCtx.fillStyle=isActive?s.color.replace('#','rgba(').replace(/^/,'')+'26)':'rgba(255,255,255,0.03)';
+    rCtx.fillStyle=isActive?s.color+'22':'rgba(255,255,255,0.03)';
+    rCtx.strokeStyle=s.color+(isActive?'':'44');
+    rCtx.lineWidth=isActive?2:1;
+    rCtx.beginPath();
+    rCtx.roundRect(x,H/2-30,boxW,60,6);
+    rCtx.fill(); rCtx.stroke();
+    rCtx.fillStyle=s.color+(isActive?'':'66');
+    rCtx.font=`${isActive?'700':'400'} 9px Space Mono,monospace`;
+    rCtx.textAlign='center';
+    const lines=s.label.split('\n');
+    lines.forEach((l,li)=>rCtx.fillText(l,x+boxW/2,H/2-8+li*14));
+    if(i<n-1){
+      rCtx.beginPath();
+      rCtx.moveTo(x+boxW+2,H/2);
+      rCtx.lineTo(x+boxW+14,H/2);
+      rCtx.strokeStyle='rgba(255,255,255,0.15)';
+      rCtx.lineWidth=1; rCtx.stroke();
+      rCtx.fillStyle='rgba(255,255,255,0.2)';
+      rCtx.fillText('→',x+boxW+8,H/2+4);
+    }
+  });
+  requestAnimationFrame(drawRLHF);
+}
+setInterval(()=>rStep=(rStep+1)%rlhfSteps.length, 700);
+drawRLHF();
+
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*100);});},{threshold:0.1});
+document.querySelectorAll('.scroll-reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

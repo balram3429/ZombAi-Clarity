@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG Systems | ZombAI-Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .page-title span { background:linear-gradient(90deg,var(--accent2),#FF8C42); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .rag-pipeline { display:flex; flex-direction:column; gap:0; }
+  .rag-stage {
+    display:flex; align-items:center; gap:20px;
+    padding:20px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+    transition:all 0.3s;
+  }
+  .rag-stage:last-child { border-bottom:none; }
+  .rag-stage.active .stage-icon { box-shadow: 0 0 25px rgba(255,61,113,0.5); }
+  .stage-icon {
+    width:56px; height:56px; border-radius:10px;
+    background:rgba(255,61,113,0.1); border:1px solid rgba(255,61,113,0.3);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem; min-width:56px;
+    transition:all 0.3s;
+  }
+  .stage-content h3 { font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem; margin-bottom:4px; }
+  .stage-content p { color:var(--muted); font-size:0.85rem; line-height:1.6; }
+  .vector-space { position:relative; overflow:hidden; }
+  .chunk-pill {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(255,61,113,0.08); border:1px solid rgba(255,61,113,0.25);
+    border-radius:6px; padding:8px 14px; margin:6px;
+    font-family:'Space Mono',monospace; font-size:0.75rem; color:var(--accent2);
+    transition:all 0.3s;
+  }
+  .chunk-pill.similar { background:rgba(255,61,113,0.25); border-color:var(--accent2); box-shadow:0 0 15px rgba(255,61,113,0.3); }
+  .chunk-dot { width:8px; height:8px; border-radius:50%; background:var(--accent2); }
+  .score-bar { height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:4px; overflow:hidden; }
+  .score-fill { height:100%; background:var(--accent2); border-radius:2px; transition:width 0.8s ease; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <div class="nav-links">
+    <a href="fundamentals.html">Fundamentals</a>
+    <a href="llm.html">LLMs</a>
+    <a href="rag.html" class="active">RAG</a>
+    <a href="genai.html">Generative AI</a>
+    <a href="agentic.html">Agentic AI</a>
+    <a href="resources.html" class="nav-cta">Resources</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Module 03</div>
+  <h1 class="page-title"><span>Retrieval-Augmented<br>Generation</span></h1>
+  <p class="page-sub">LLMs hallucinate when they don't know. RAG gives them a memory — real documents, retrieved in real time.</p>
+</div>
+
+<div class="content-section">
+
+  <!-- WHAT IS RAG -->
+  <div class="concept-block scroll-reveal">
+    <h2>🔍 Why RAG Exists</h2>
+    <p>A standard LLM has frozen knowledge — it only knows what it was trained on, up to a cutoff date. Ask it about your company's Q4 report, your codebase, or yesterday's news — it either hallucinates or admits ignorance.</p>
+    <p>RAG solves this by splitting the problem: use a fast retrieval system to find relevant documents, then hand them to the LLM as context. The LLM doesn't need to memorize everything — it just needs to read and reason.</p>
+    <div class="anim-container">
+      <div class="anim-label">RAG vs Standard LLM</div>
+      <canvas id="comparisonCanvas" height="160"></canvas>
+    </div>
+  </div>
+
+  <!-- RAG PIPELINE STEPS -->
+  <div class="concept-block scroll-reveal">
+    <h2>⚙ The RAG Pipeline — Step by Step</h2>
+    <p>RAG has two phases: an offline indexing phase (done once) and an online retrieval+generation phase (done per query).</p>
+    <div class="anim-container" style="padding:30px">
+      <div class="anim-label">Full RAG Pipeline</div>
+      <canvas id="ragPipelineCanvas" height="200"></canvas>
+    </div>
+    <div class="rag-pipeline" id="ragPipeline">
+      <div class="rag-stage" id="rs0"><div class="stage-icon">📄</div><div class="stage-content"><h3>1. Document Loading</h3><p>Ingest PDFs, web pages, databases, code files — any text source into the pipeline.</p></div></div>
+      <div class="rag-stage" id="rs1"><div class="stage-icon">✂️</div><div class="stage-content"><h3>2. Chunking</h3><p>Split documents into overlapping chunks (e.g. 512 tokens with 50-token overlap). Chunk size is a critical hyperparameter.</p></div></div>
+      <div class="rag-stage" id="rs2"><div class="stage-icon">🔢</div><div class="stage-content"><h3>3. Embedding</h3><p>Each chunk is converted into a dense vector (e.g. 1536 dimensions) using an embedding model like text-embedding-ada-002.</p></div></div>
+      <div class="rag-stage" id="rs3"><div class="stage-icon">🗄️</div><div class="stage-content"><h3>4. Vector Store</h3><p>Vectors are indexed in a vector database (Pinecone, Weaviate, Chroma, FAISS) for fast similarity search.</p></div></div>
+      <div class="rag-stage" id="rs4"><div class="stage-icon">❓</div><div class="stage-content"><h3>5. Query Embedding</h3><p>User's question is embedded with the same model — queries and documents live in the same vector space.</p></div></div>
+      <div class="rag-stage" id="rs5"><div class="stage-icon">🔎</div><div class="stage-content"><h3>6. Similarity Search</h3><p>Find top-k most similar chunks via cosine similarity or ANN search. Typically retrieve 3-10 chunks.</p></div></div>
+      <div class="rag-stage" id="rs6"><div class="stage-icon">🤖</div><div class="stage-content"><h3>7. Augmented Generation</h3><p>Retrieved chunks + original query are stuffed into the LLM's context window. The LLM generates a grounded answer.</p></div></div>
+    </div>
+  </div>
+
+  <!-- EMBEDDINGS -->
+  <div class="concept-block scroll-reveal">
+    <h2>🔢 Embeddings — Text as Coordinates</h2>
+    <p>An embedding model maps text to a point in high-dimensional space. Similar texts are close together. This is what makes semantic search possible — not keyword matching, but meaning matching.</p>
+    <div class="anim-container">
+      <div class="anim-label">2D Embedding Space (simplified)</div>
+      <canvas id="embeddingCanvas" height="280"></canvas>
+    </div>
+  </div>
+
+  <!-- SIMILARITY SEARCH -->
+  <div class="concept-block scroll-reveal">
+    <h2>📐 Similarity Search</h2>
+    <p>Given a query vector, we want the k nearest chunks. The most common metrics: cosine similarity (angle between vectors) and dot product. Vector databases like Pinecone use ANN algorithms to make this blazing fast even with millions of documents.</p>
+    <div class="anim-container" style="padding:24px">
+      <div class="anim-label">Live Similarity Ranking</div>
+      <div id="chunksDisplay"></div>
+    </div>
+    <div class="highlight-box">
+      cosine_similarity(A, B) = (A · B) / (|A| × |B|)<br>
+      <span style="color:var(--muted); font-size:0.75rem">Range: -1 (opposite) to +1 (identical). RAG uses top-k by this score.</span>
+    </div>
+  </div>
+
+  <!-- ADVANCED RAG -->
+  <div class="concept-block scroll-reveal">
+    <h2>🚀 Advanced RAG Techniques</h2>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-card-num">🔄</div><h3>HyDE</h3><p>Generate a hypothetical answer, embed it, then retrieve. Improves recall for abstract queries.</p></div>
+      <div class="step-card"><div class="step-card-num">🔀</div><h3>Re-ranking</h3><p>Use a cross-encoder to re-score retrieved chunks for precision after initial retrieval.</p></div>
+      <div class="step-card"><div class="step-card-num">🌳</div><h3>Hierarchical Chunking</h3><p>Store summaries at multiple granularity levels — paragraph, section, document.</p></div>
+      <div class="step-card"><div class="step-card-num">🕸</div><h3>GraphRAG</h3><p>Build a knowledge graph over documents for multi-hop reasoning and relationship queries.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="module-nav">
+  <a href="llm.html"><span class="nav-dir">← Previous</span><span class="nav-title">Large Language Models</span></a>
+  <a href="genai.html" class="next"><span class="nav-dir">Next Module →</span><span class="nav-title">Generative AI</span></a>
+</div>
+
+<footer>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <p>© 2025 ZombAI-Clarity · Free to learn, free to share</p>
+</footer>
+
+<script>
+// Comparison canvas
+const compCanvas = document.getElementById('comparisonCanvas');
+const cCtx = compCanvas.getContext('2d');
+function drawComparison() {
+  const W=compCanvas.offsetWidth||700,H=160; compCanvas.width=W;
+  cCtx.clearRect(0,0,W,H);
+  const midX=W/2;
+  // Standard LLM
+  cCtx.fillStyle='#0A0F1E'; cCtx.strokeStyle='rgba(255,61,113,0.4)'; cCtx.lineWidth=1;
+  cCtx.beginPath(); cCtx.roundRect(20,H/2-30,midX-40,60,8); cCtx.fill(); cCtx.stroke();
+  cCtx.fillStyle='#FF3D71'; cCtx.font='bold 11px Space Mono,monospace'; cCtx.textAlign='center';
+  cCtx.fillText('Standard LLM',midX/2,H/2-8);
+  cCtx.fillStyle='var(--muted)'; cCtx.font='10px Inter,sans-serif';
+  cCtx.fillText('Frozen knowledge → Hallucination',midX/2,H/2+12);
+  // RAG LLM
+  cCtx.fillStyle='#0A0F1E'; cCtx.strokeStyle='rgba(0,255,178,0.4)'; cCtx.lineWidth=1;
+  cCtx.beginPath(); cCtx.roundRect(midX+20,H/2-30,midX-40,60,8); cCtx.fill(); cCtx.stroke();
+  cCtx.fillStyle='#00FFB2'; cCtx.font='bold 11px Space Mono,monospace'; cCtx.textAlign='center';
+  cCtx.fillText('RAG System',midX+midX/2,H/2-8);
+  cCtx.fillStyle='var(--muted)'; cCtx.font='10px Inter,sans-serif';
+  cCtx.fillText('Real docs + LLM → Grounded answers',midX+midX/2,H/2+12);
+  requestAnimationFrame(drawComparison);
+}
+drawComparison();
+
+// RAG Pipeline animated
+const ragCanvas = document.getElementById('ragPipelineCanvas');
+const rCtx = ragCanvas.getContext('2d');
+const ragStages = ['Load Docs','Chunk','Embed','Vector DB','Embed Query','Retrieve','Generate'];
+const ragColors = ['#FF3D71','#FF8C42','#FFD60A','#7B61FF','#00C8FF','#00FFB2','#00FFB2'];
+let ragActive = 0;
+setInterval(()=>{
+  const stages=document.querySelectorAll('.rag-stage');
+  stages.forEach(s=>s.classList.remove('active'));
+  const t=document.getElementById('rs'+ragActive);
+  if(t)t.classList.add('active');
+  ragActive=(ragActive+1)%7;
+},800);
+
+function drawRAGPipeline(){
+  const W=ragCanvas.offsetWidth||700,H=200; ragCanvas.width=W;
+  rCtx.clearRect(0,0,W,H);
+  const n=ragStages.length;
+  const bw=Math.min(80,(W-40)/n-10);
+  const total=n*bw+(n-1)*12;
+  const sx=(W-total)/2;
+  ragStages.forEach((s,i)=>{
+    const x=sx+i*(bw+12);
+    const isActive=i===ragActive;
+    rCtx.fillStyle=isActive?(ragColors[i]+'22'):'rgba(255,255,255,0.03)';
+    rCtx.strokeStyle=ragColors[i]+(isActive?'':'44');
+    rCtx.lineWidth=isActive?2:1;
+    rCtx.beginPath(); rCtx.roundRect(x,H/2-30,bw,60,6); rCtx.fill(); rCtx.stroke();
+    rCtx.fillStyle=ragColors[i]+(isActive?'':'88');
+    rCtx.font=`${isActive?'700':'400'} 9px Space Mono,monospace`;
+    rCtx.textAlign='center';
+    const words=s.split(' ');
+    words.forEach((w,wi)=>rCtx.fillText(w,x+bw/2,H/2-6+wi*12));
+    if(i<n-1){
+      rCtx.fillStyle='rgba(255,255,255,0.2)';
+      rCtx.font='12px sans-serif';
+      rCtx.fillText('→',x+bw+6,H/2+4);
+    }
+    // Separator: indexing vs retrieval
+    if(i===3){
+      rCtx.strokeStyle='rgba(255,255,255,0.08)';
+      rCtx.setLineDash([4,4]);
+      rCtx.beginPath(); rCtx.moveTo(x+bw+12,20); rCtx.lineTo(x+bw+12,H-20); rCtx.stroke();
+      rCtx.setLineDash([]);
+      rCtx.fillStyle='rgba(255,255,255,0.15)';
+      rCtx.font='9px Space Mono,monospace';
+      rCtx.textAlign='left';
+      rCtx.fillText('Offline ↑',sx,18);
+      rCtx.fillText('Online ↓',x+bw+16,18);
+    }
+  });
+  requestAnimationFrame(drawRAGPipeline);
+}
+drawRAGPipeline();
+
+// Embedding space
+const embCanvas = document.getElementById('embeddingCanvas');
+const eCtx = embCanvas.getContext('2d');
+const clusters = [
+  { label:'AI Topics', color:'#00FFB2', points:[
+    {x:0.25,y:0.3,text:'LLM basics'},{x:0.3,y:0.25,text:'Transformers'},{x:0.2,y:0.35,text:'Attention'},{x:0.28,y:0.4,text:'GPT-4'}
+  ]},
+  { label:'Medical', color:'#FF3D71', points:[
+    {x:0.65,y:0.3,text:'Diagnosis'},{x:0.7,y:0.25,text:'Treatment'},{x:0.6,y:0.4,text:'MRI scan'}
+  ]},
+  { label:'Finance', color:'#FFD60A', points:[
+    {x:0.7,y:0.7,text:'Stock price'},{x:0.65,y:0.75,text:'Portfolio'},{x:0.75,y:0.65,text:'Trading'}
+  ]},
+];
+const queryPoint = {x:0.22, y:0.28, text:'Query: "How does attention work?"', color:'#7B61FF'};
+let embPulse = 0;
+function drawEmbedding(){
+  const W=embCanvas.offsetWidth||700,H=280; embCanvas.width=W; embCanvas.height=H;
+  eCtx.clearRect(0,0,W,H);
+  embPulse=(embPulse+0.04)%Math.PI;
+  clusters.forEach(cl=>{
+    // Cluster hull
+    const pts=cl.points.map(p=>({x:p.x*W,y:p.y*H}));
+    const cx=pts.reduce((s,p)=>s+p.x,0)/pts.length;
+    const cy=pts.reduce((s,p)=>s+p.y,0)/pts.length;
+    eCtx.beginPath(); eCtx.arc(cx,cy,55,0,Math.PI*2);
+    const gr=eCtx.createRadialGradient(cx,cy,10,cx,cy,55);
+    gr.addColorStop(0,cl.color+'18'); gr.addColorStop(1,cl.color+'05');
+    eCtx.fillStyle=gr; eCtx.fill();
+    eCtx.strokeStyle=cl.color+'33'; eCtx.lineWidth=1;
+    eCtx.setLineDash([4,4]); eCtx.stroke(); eCtx.setLineDash([]);
+    // Points
+    cl.points.forEach(p=>{
+      const px=p.x*W, py=p.y*H;
+      eCtx.beginPath(); eCtx.arc(px,py,5,0,Math.PI*2);
+      eCtx.fillStyle=cl.color; eCtx.fill();
+      eCtx.fillStyle=cl.color+'CC'; eCtx.font='10px Space Mono,monospace'; eCtx.textAlign='left';
+      eCtx.fillText(p.text,px+8,py+4);
+    });
+    eCtx.fillStyle=cl.color+'88'; eCtx.font='bold 10px Syne,sans-serif'; eCtx.textAlign='center';
+    eCtx.fillText(cl.label,cx,cy+70);
+  });
+  // Query point with pulse
+  const qx=queryPoint.x*W, qy=queryPoint.y*H;
+  const pulse=8+Math.sin(embPulse)*6;
+  eCtx.beginPath(); eCtx.arc(qx,qy,pulse,0,Math.PI*2);
+  eCtx.fillStyle='rgba(123,97,255,0.2)'; eCtx.fill();
+  eCtx.beginPath(); eCtx.arc(qx,qy,7,0,Math.PI*2);
+  eCtx.fillStyle='#7B61FF'; eCtx.fill();
+  eCtx.strokeStyle='white'; eCtx.lineWidth=1.5; eCtx.stroke();
+  eCtx.fillStyle='white'; eCtx.font='bold 10px Space Mono,monospace'; eCtx.textAlign='left';
+  eCtx.fillText(queryPoint.text,qx+12,qy-8);
+  // Lines to nearest cluster
+  clusters[0].points.forEach(p=>{
+    eCtx.beginPath(); eCtx.moveTo(qx,qy); eCtx.lineTo(p.x*W,p.y*H);
+    eCtx.strokeStyle='rgba(123,97,255,0.25)'; eCtx.lineWidth=1; eCtx.setLineDash([3,3]); eCtx.stroke(); eCtx.setLineDash([]);
+  });
+  requestAnimationFrame(drawEmbedding);
+}
+drawEmbedding();
+
+// Chunks display
+const chunkData = [
+  {text:'Attention is a mechanism that allows tokens to attend to each other...', score:0.94},
+  {text:'The transformer uses multi-head attention to capture different relationships...', score:0.88},
+  {text:'Self-attention computes queries, keys and values from the same sequence...', score:0.81},
+  {text:'The neural network was trained on ImageNet dataset for classification...', score:0.21},
+  {text:'Stock market analysis uses time series forecasting techniques...', score:0.09},
+];
+const chunksDiv = document.getElementById('chunksDisplay');
+chunkData.forEach((c,i)=>{
+  const d=document.createElement('div');
+  d.className='chunk-pill'+(c.score>0.7?' similar':'');
+  d.innerHTML=`<span class="chunk-dot"></span><span style="flex:1">${c.text.substring(0,60)}...</span><span style="margin-left:auto; font-size:0.65rem; color:${c.score>0.7?'var(--accent2)':'var(--muted)'}">${c.score.toFixed(2)}</span>`;
+  chunksDiv.appendChild(d);
+  const bar=document.createElement('div');
+  bar.className='score-bar';
+  bar.style.margin='0 8px 8px';
+  bar.innerHTML=`<div class="score-fill" style="width:${c.score*100}%"></div>`;
+  chunksDiv.appendChild(bar);
+});
+
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*100);});},{threshold:0.1});
+document.querySelectorAll('.scroll-reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

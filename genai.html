@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generative AI | ZombAI-Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .page-title span { background:linear-gradient(90deg,var(--accent4),#FF8C42); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .model-tabs { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+  .model-tab {
+    font-family:'Space Mono',monospace; font-size:0.75rem;
+    padding:8px 18px; border-radius:6px;
+    border:1px solid rgba(255,255,255,0.1);
+    color:var(--muted); cursor:pointer; transition:all 0.2s;
+  }
+  .model-tab.active { background:rgba(255,214,10,0.12); border-color:var(--accent4); color:var(--accent4); }
+  .gen-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
+  .gen-card {
+    background:#0A0F1E; border:1px solid rgba(255,255,255,0.06);
+    border-radius:10px; padding:20px; text-align:center;
+  }
+  .gen-card-icon { font-size:2rem; margin-bottom:10px; }
+  .gen-card-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; margin-bottom:6px; }
+  .gen-card-desc { color:var(--muted); font-size:0.8rem; line-height:1.5; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <div class="nav-links">
+    <a href="fundamentals.html">Fundamentals</a>
+    <a href="llm.html">LLMs</a>
+    <a href="rag.html">RAG</a>
+    <a href="genai.html" class="active">Generative AI</a>
+    <a href="agentic.html">Agentic AI</a>
+    <a href="resources.html" class="nav-cta">Resources</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Module 04</div>
+  <h1 class="page-title"><span>Generative AI</span></h1>
+  <p class="page-sub">From GANs to diffusion models — how AI learned to create images, music, video, and more from scratch.</p>
+</div>
+
+<div class="content-section">
+
+  <!-- WHAT IS GENAI -->
+  <div class="concept-block scroll-reveal">
+    <h2>🎨 What Makes AI "Generative"?</h2>
+    <p>Discriminative models classify or predict. Generative models learn the distribution of data and can sample new examples from it. They answer: "Given what I've learned, what could a new example look like?" This enables creation of images, text, audio, and video.</p>
+    <div class="gen-grid">
+      <div class="gen-card"><div class="gen-card-icon">🖼️</div><div class="gen-card-name">Image Generation</div><div class="gen-card-desc">DALL-E, Stable Diffusion, Midjourney</div></div>
+      <div class="gen-card"><div class="gen-card-icon">🎵</div><div class="gen-card-name">Audio / Music</div><div class="gen-card-desc">Suno, Udio, MusicLM</div></div>
+      <div class="gen-card"><div class="gen-card-icon">🎬</div><div class="gen-card-name">Video</div><div class="gen-card-desc">Sora, Runway, Pika</div></div>
+      <div class="gen-card"><div class="gen-card-icon">💻</div><div class="gen-card-name">Code</div><div class="gen-card-desc">GitHub Copilot, Claude Code</div></div>
+      <div class="gen-card"><div class="gen-card-icon">🧬</div><div class="gen-card-name">Molecules</div><div class="gen-card-desc">AlphaFold, RoseTTAFold</div></div>
+      <div class="gen-card"><div class="gen-card-icon">🌐</div><div class="gen-card-name">3D / Worlds</div><div class="gen-card-desc">NeRF, Gaussian Splatting</div></div>
+    </div>
+  </div>
+
+  <!-- GANs -->
+  <div class="concept-block scroll-reveal">
+    <h2>⚔ GANs — Generative Adversarial Networks</h2>
+    <p>Introduced by Ian Goodfellow in 2014, GANs train two networks against each other: a Generator that creates fake data, and a Discriminator that tries to tell fake from real. This adversarial game pushes both networks to improve until the generator creates indistinguishable fakes.</p>
+    <div class="anim-container">
+      <div class="anim-label">GAN Training Loop — Generator vs Discriminator</div>
+      <canvas id="ganCanvas" height="220"></canvas>
+    </div>
+    <div class="highlight-box">
+      Generator: noise z → fake image x̃<br>
+      Discriminator: image → P(real)<br>
+      <span style="color:var(--muted);font-size:0.75rem">min_G max_D: E[log D(x)] + E[log(1 - D(G(z)))]</span>
+    </div>
+  </div>
+
+  <!-- DIFFUSION MODELS -->
+  <div class="concept-block scroll-reveal">
+    <h2>🌊 Diffusion Models — The New Paradigm</h2>
+    <p>Diffusion models replaced GANs as the dominant image generation approach (Stable Diffusion, DALL-E 3, Midjourney). The idea: train a model to reverse a gradual noising process. Add noise step by step to destroy an image, then teach the model to undo each step. To generate: start from pure noise and denoise step by step.</p>
+    <div class="anim-container">
+      <div class="anim-label">Diffusion Process — Forward (noising) & Reverse (denoising)</div>
+      <canvas id="diffusionCanvas" height="200"></canvas>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-card-num">→</div><h3>Forward Process</h3><p>Gradually add Gaussian noise to an image over T timesteps (T≈1000) until it's pure noise.</p></div>
+      <div class="step-card"><div class="step-card-num">←</div><h3>Reverse Process</h3><p>A U-Net learns to predict and remove the noise at each timestep, conditioned on a text prompt.</p></div>
+      <div class="step-card"><div class="step-card-num">🎯</div><h3>CLIP Guidance</h3><p>Text prompts are encoded by CLIP and used to steer the denoising toward prompt-matching images.</p></div>
+    </div>
+  </div>
+
+  <!-- VAEs -->
+  <div class="concept-block scroll-reveal">
+    <h2>🗜 Variational Autoencoders (VAE)</h2>
+    <p>VAEs learn a compressed latent space representation of data. Unlike regular autoencoders, VAEs learn a distribution over the latent space — so you can sample new points and decode them into new data. Latent diffusion models (Stable Diffusion) use a VAE to compress images before diffusing in latent space.</p>
+    <div class="anim-container">
+      <div class="anim-label">VAE Architecture — Encode → Sample → Decode</div>
+      <canvas id="vaeCanvas" height="160"></canvas>
+    </div>
+  </div>
+
+  <!-- MULTIMODAL -->
+  <div class="concept-block scroll-reveal">
+    <h2>🌐 Multimodal AI</h2>
+    <p>Modern AI isn't limited to one modality. Models like GPT-4V, Claude, and Gemini process text + images + audio together. The secret: project all modalities into a shared embedding space, then run a transformer over the combined sequence.</p>
+    <div class="anim-container">
+      <div class="anim-label">Multimodal Fusion — Text + Image + Audio → Shared Space</div>
+      <canvas id="multimodalCanvas" height="180"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<div class="module-nav">
+  <a href="rag.html"><span class="nav-dir">← Previous</span><span class="nav-title">RAG Systems</span></a>
+  <a href="agentic.html" class="next"><span class="nav-dir">Next Module →</span><span class="nav-title">Agentic AI</span></a>
+</div>
+
+<footer>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <p>© 2025 ZombAI-Clarity · Free to learn, free to share</p>
+</footer>
+
+<script>
+// GAN Canvas
+const ganCanvas=document.getElementById('ganCanvas');
+const gCtx=ganCanvas.getContext('2d');
+let ganStep=0, ganScore=0.5;
+const ganStages=['🎲 Random Noise','⚡ Generator','🎨 Fake Image','🔍 Discriminator','📊 Loss','🔄 Update'];
+function drawGAN(){
+  const W=ganCanvas.offsetWidth||700,H=220; ganCanvas.width=W; ganCanvas.height=H;
+  gCtx.clearRect(0,0,W,H);
+  const n=ganStages.length;
+  const bw=Math.min(90,(W-60)/n-10);
+  const total=n*bw+(n-1)*14;
+  const sx=(W-total)/2;
+  ganStages.forEach((s,i)=>{
+    const x=sx+i*(bw+14);
+    const isActive=i===ganStep;
+    const isGen=i<=2;
+    const col=isGen?'#7B61FF':'#FF3D71';
+    gCtx.fillStyle=isActive?col+'22':'rgba(255,255,255,0.02)';
+    gCtx.strokeStyle=col+(isActive?'':'44');
+    gCtx.lineWidth=isActive?2:1;
+    gCtx.beginPath(); gCtx.roundRect(x,H/2-35,bw,70,8); gCtx.fill(); gCtx.stroke();
+    gCtx.fillStyle=col+(isActive?'':'88');
+    gCtx.font=`${isActive?'bold':''} 10px Space Mono,monospace`;
+    gCtx.textAlign='center';
+    const lines=s.split(' ');
+    lines.forEach((l,li)=>gCtx.fillText(l,x+bw/2,H/2-8+li*14));
+    if(i<n-1){
+      gCtx.fillStyle='rgba(255,255,255,0.2)';
+      gCtx.font='14px sans-serif';
+      gCtx.fillText(i===2?'→→':'→',x+bw+7,H/2+4);
+    }
+  });
+  // Labels
+  gCtx.fillStyle='rgba(123,97,255,0.5)'; gCtx.font='10px Space Mono,monospace'; gCtx.textAlign='center';
+  const genMid=sx+(2*(bw+14)+bw)/2;
+  gCtx.fillText('GENERATOR',genMid,H-8);
+  gCtx.fillStyle='rgba(255,61,113,0.5)';
+  const disMid=sx+(3*(bw+14))+(2*(bw+14)+bw)/2;
+  gCtx.fillText('DISCRIMINATOR',sx+3.5*(bw+14)+bw,H-8);
+  // Score gauge
+  ganScore=0.3+0.2*Math.sin(Date.now()*0.001)+0.1*Math.random();
+  const gaugeX=W-100, gaugeY=30;
+  gCtx.fillStyle='rgba(255,255,255,0.1)';
+  gCtx.fillRect(gaugeX,gaugeY,80,10);
+  gCtx.fillStyle=ganScore>0.5?'#00FFB2':'#FF3D71';
+  gCtx.fillRect(gaugeX,gaugeY,80*ganScore,10);
+  gCtx.fillStyle='rgba(255,255,255,0.5)'; gCtx.font='9px Space Mono,monospace'; gCtx.textAlign='left';
+  gCtx.fillText(`D(G(z))=${ganScore.toFixed(2)}`,gaugeX,gaugeY-4);
+  requestAnimationFrame(drawGAN);
+}
+setInterval(()=>ganStep=(ganStep+1)%6,600);
+drawGAN();
+
+// Diffusion canvas
+const diffCanvas=document.getElementById('diffusionCanvas');
+const dCtx=diffCanvas.getContext('2d');
+let diffT=0;
+function drawDiffusion(){
+  const W=diffCanvas.offsetWidth||700,H=200; diffCanvas.width=W; diffCanvas.height=H;
+  dCtx.clearRect(0,0,W,H);
+  const steps=7;
+  const boxW=Math.min(70,(W-80)/steps-10);
+  const total=steps*boxW+(steps-1)*12;
+  const sx=(W-total)/2;
+  const currentForward=Math.floor(diffT)%steps;
+  const isReverse=Math.floor(diffT/steps)%2===1;
+  for(let i=0;i<steps;i++){
+    const x=sx+i*(boxW+12);
+    const noiseLevel=isReverse?(steps-1-i)/(steps-1):i/(steps-1);
+    // Draw noisy image box
+    dCtx.fillStyle='#0A0F1E';
+    dCtx.strokeStyle=i===currentForward?'#FFD60A44':'rgba(255,214,10,0.2)';
+    dCtx.lineWidth=i===currentForward?2:1;
+    dCtx.beginPath(); dCtx.roundRect(x,H/2-35,boxW,70,6); dCtx.fill(); dCtx.stroke();
+    // Noise pixels
+    const px=parseInt(x),py=parseInt(H/2-35),bw2=parseInt(boxW),bh=70;
+    for(let ny=py+4;ny<py+bh-4;ny+=4){
+      for(let nx2=px+4;nx2<px+bw2-4;nx2+=4){
+        const r=Math.random(); if(r>noiseLevel*0.8+0.1) continue;
+        const v=Math.floor(Math.random()*100+80);
+        const a=noiseLevel*(0.6+Math.random()*0.3);
+        dCtx.fillStyle=`rgba(${v},${v},${255},${a*0.5})`;
+        dCtx.fillRect(nx2,ny,3,3);
+      }
+    }
+    // Clear center if low noise
+    if(noiseLevel<0.4){
+      const cx2=x+boxW/2,cy=H/2;
+      const g=dCtx.createRadialGradient(cx2,cy,2,cx2,cy,20);
+      g.addColorStop(0,'rgba(255,214,10,0.3)'); g.addColorStop(1,'rgba(255,214,10,0)');
+      dCtx.beginPath(); dCtx.arc(cx2,cy,18,0,Math.PI*2); dCtx.fillStyle=g; dCtx.fill();
+    }
+    // Label
+    dCtx.fillStyle='rgba(255,214,10,0.5)'; dCtx.font='9px Space Mono,monospace'; dCtx.textAlign='center';
+    dCtx.fillText(`t=${isReverse?steps-1-i:i}`,x+boxW/2,H-6);
+    if(i<steps-1){
+      dCtx.fillStyle='rgba(255,255,255,0.2)';
+      dCtx.font='14px sans-serif'; dCtx.textAlign='center';
+      dCtx.fillText(isReverse?'←':'→',x+boxW+6,H/2+5);
+    }
+  }
+  dCtx.fillStyle='rgba(255,255,255,0.3)'; dCtx.font='bold 10px Space Mono,monospace'; dCtx.textAlign='center';
+  dCtx.fillText(isReverse?'← REVERSE (Denoising = Generation)':'FORWARD (Adding noise) →',W/2,20);
+  diffT+=0.08;
+  requestAnimationFrame(drawDiffusion);
+}
+drawDiffusion();
+
+// VAE Canvas
+const vaeCanvas=document.getElementById('vaeCanvas');
+const vCtx=vaeCanvas.getContext('2d');
+let vaeP=0;
+function drawVAE(){
+  const W=vaeCanvas.offsetWidth||700,H=160; vaeCanvas.width=W; vaeCanvas.height=H;
+  vCtx.clearRect(0,0,W,H);
+  const blocks=[
+    {label:'Input\nImage',color:'#00FFB2',w:70},
+    {label:'Encoder\nq(z|x)',color:'#00C8FF',w:80},
+    {label:'Latent μ,σ\n(Sample z)',color:'#7B61FF',w:90},
+    {label:'Decoder\np(x|z)',color:'#FF8C42',w:80},
+    {label:'Generated\nOutput',color:'#FFD60A',w:70},
+  ];
+  const totalW=blocks.reduce((s,b)=>s+b.w,0)+(blocks.length-1)*20;
+  let cx=(W-totalW)/2;
+  blocks.forEach((b,i)=>{
+    const isActive=Math.floor(vaeP)%blocks.length===i;
+    vCtx.fillStyle=isActive?b.color+'22':'rgba(255,255,255,0.03)';
+    vCtx.strokeStyle=b.color+(isActive?'':'44');
+    vCtx.lineWidth=isActive?2:1;
+    vCtx.beginPath(); vCtx.roundRect(cx,H/2-28,b.w,56,8); vCtx.fill(); vCtx.stroke();
+    vCtx.fillStyle=b.color+(isActive?'':'88');
+    vCtx.font=`${isActive?'bold':''} 9px Space Mono,monospace`;
+    vCtx.textAlign='center';
+    b.label.split('\n').forEach((l,li)=>vCtx.fillText(l,cx+b.w/2,H/2-6+li*13));
+    if(i<blocks.length-1){
+      // Animated dot on line
+      const nextX=cx+b.w+20;
+      const t=(vaeP%1);
+      const dotX=cx+b.w+(20*t);
+      vCtx.beginPath(); vCtx.arc(dotX,H/2,4,0,Math.PI*2);
+      vCtx.fillStyle=Math.floor(vaeP)%blocks.length===i?b.color:'rgba(255,255,255,0.1)';
+      vCtx.fill();
+      vCtx.beginPath(); vCtx.moveTo(cx+b.w+2,H/2); vCtx.lineTo(nextX-2,H/2);
+      vCtx.strokeStyle='rgba(255,255,255,0.1)'; vCtx.lineWidth=1; vCtx.stroke();
+    }
+    cx+=b.w+20;
+  });
+  vaeP+=0.04;
+  requestAnimationFrame(drawVAE);
+}
+drawVAE();
+
+// Multimodal canvas
+const mmCanvas=document.getElementById('multimodalCanvas');
+const mCtx=mmCanvas.getContext('2d');
+let mmP=0;
+function drawMM(){
+  const W=mmCanvas.offsetWidth||700,H=180; mmCanvas.width=W; mmCanvas.height=H;
+  mCtx.clearRect(0,0,W,H);
+  const inputs=[{label:'🖼 Image\nTokens',color:'#FF8C42',y:0.25},{label:'📝 Text\nTokens',color:'#00FFB2',y:0.5},{label:'🎵 Audio\nTokens',color:'#7B61FF',y:0.75}];
+  inputs.forEach(inp=>{
+    const y=inp.y*H;
+    const x=40;
+    mCtx.fillStyle=inp.color+'22'; mCtx.strokeStyle=inp.color+'66'; mCtx.lineWidth=1;
+    mCtx.beginPath(); mCtx.roundRect(x,y-18,90,36,6); mCtx.fill(); mCtx.stroke();
+    mCtx.fillStyle=inp.color; mCtx.font='10px Space Mono,monospace'; mCtx.textAlign='center';
+    inp.label.split('\n').forEach((l,li)=>mCtx.fillText(l,x+45,y-3+li*13));
+    // Lines to center
+    const endX=W/2-40;
+    const t=(mmP%1);
+    const dotX=x+90+(endX-x-90)*t;
+    const dotY=y+(H/2-y)*t;
+    mCtx.beginPath(); mCtx.moveTo(x+90,y); mCtx.lineTo(endX,H/2);
+    mCtx.strokeStyle=inp.color+'33'; mCtx.lineWidth=1; mCtx.stroke();
+    mCtx.beginPath(); mCtx.arc(dotX,dotY,4,0,Math.PI*2);
+    mCtx.fillStyle=inp.color; mCtx.fill();
+  });
+  // Shared space
+  const shx=W/2-40, shw=80;
+  const shGrad=mCtx.createLinearGradient(shx,0,shx+shw,H);
+  shGrad.addColorStop(0,'rgba(0,255,178,0.15)'); shGrad.addColorStop(1,'rgba(123,97,255,0.15)');
+  mCtx.fillStyle=shGrad; mCtx.strokeStyle='rgba(255,255,255,0.2)'; mCtx.lineWidth=1;
+  mCtx.beginPath(); mCtx.roundRect(shx,H/2-40,shw,80,10); mCtx.fill(); mCtx.stroke();
+  mCtx.fillStyle='rgba(255,255,255,0.7)'; mCtx.font='bold 9px Space Mono,monospace'; mCtx.textAlign='center';
+  mCtx.fillText('SHARED',shx+shw/2,H/2-4); mCtx.fillText('EMBEDDING',shx+shw/2,H/2+8); mCtx.fillText('SPACE',shx+shw/2,H/2+20);
+  // Output
+  const ox=shx+shw+20;
+  mCtx.fillStyle='rgba(0,255,178,0.1)'; mCtx.strokeStyle='rgba(0,255,178,0.4)'; mCtx.lineWidth=1.5;
+  mCtx.beginPath(); mCtx.roundRect(ox,H/2-30,100,60,8); mCtx.fill(); mCtx.stroke();
+  mCtx.fillStyle='#00FFB2'; mCtx.font='bold 10px Space Mono,monospace'; mCtx.textAlign='center';
+  mCtx.fillText('🤖 Unified',ox+50,H/2-4); mCtx.fillText('Response',ox+50,H/2+12);
+  mmP+=0.02;
+  requestAnimationFrame(drawMM);
+}
+drawMM();
+
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*100);});},{threshold:0.1});
+document.querySelectorAll('.scroll-reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

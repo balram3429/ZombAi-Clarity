@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resource Hub | ZombAI-Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .page-title span { background:linear-gradient(90deg,var(--accent3),#C084FC); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
+  .filter-btn {
+    font-family:'Space Mono',monospace; font-size:0.72rem;
+    padding:7px 16px; border-radius:100px;
+    border:1px solid rgba(255,255,255,0.1);
+    color:var(--muted); cursor:pointer; transition:all 0.2s;
+    background:transparent;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color:var(--accent); color:var(--accent);
+    background:rgba(0,255,178,0.07);
+  }
+  .resource-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+  .res-card {
+    background:var(--card); border:1px solid rgba(255,255,255,0.07);
+    border-radius:12px; padding:24px; text-decoration:none; color:inherit;
+    display:flex; flex-direction:column; gap:12px;
+    transition:all 0.3s; position:relative; overflow:hidden;
+  }
+  .res-card::after {
+    content:'↗'; position:absolute; top:16px; right:16px;
+    font-size:1rem; color:var(--muted); transition:all 0.3s;
+  }
+  .res-card:hover { border-color:var(--accent3); transform:translateY(-3px); box-shadow:0 20px 40px rgba(0,0,0,0.3); }
+  .res-card:hover::after { color:var(--accent3); transform:translate(3px,-3px); }
+  .res-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'Space Mono',monospace; font-size:0.65rem;
+    text-transform:uppercase; letter-spacing:2px; padding:3px 10px;
+    border-radius:100px;
+  }
+  .res-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; line-height:1.3; padding-right:24px; }
+  .res-desc { color:var(--muted); font-size:0.82rem; line-height:1.6; flex:1; }
+  .res-meta { display:flex; gap:12px; font-family:'Space Mono',monospace; font-size:0.68rem; color:var(--muted); flex-wrap:wrap; }
+  .res-star { color:var(--accent4); }
+  .category-header {
+    font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem;
+    letter-spacing:-0.5px; margin:48px 0 20px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .category-header::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.06); }
+  /* Type colors */
+  .badge-github { background:rgba(255,214,10,0.12); color:var(--accent4); border:1px solid rgba(255,214,10,0.25); }
+  .badge-course { background:rgba(0,255,178,0.1); color:var(--accent); border:1px solid rgba(0,255,178,0.25); }
+  .badge-paper { background:rgba(255,61,113,0.1); color:var(--accent2); border:1px solid rgba(255,61,113,0.25); }
+  .badge-tool { background:rgba(123,97,255,0.1); color:var(--accent3); border:1px solid rgba(123,97,255,0.25); }
+  .badge-video { background:rgba(0,200,255,0.1); color:#00C8FF; border:1px solid rgba(0,200,255,0.25); }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <div class="nav-links">
+    <a href="fundamentals.html">Fundamentals</a>
+    <a href="llm.html">LLMs</a>
+    <a href="rag.html">RAG</a>
+    <a href="genai.html">Generative AI</a>
+    <a href="agentic.html">Agentic AI</a>
+    <a href="resources.html" class="active nav-cta">Resources</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Resource Hub</div>
+  <h1 class="page-title"><span>Learn From<br>The Best</span></h1>
+  <p class="page-sub">Hand-picked GitHub repos, courses, papers, and tools. Every link is worth your time.</p>
+</div>
+
+<div class="content-section">
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterRes('all',this)">All Resources</button>
+    <button class="filter-btn" onclick="filterRes('github',this)">⭐ GitHub</button>
+    <button class="filter-btn" onclick="filterRes('course',this)">📚 Courses</button>
+    <button class="filter-btn" onclick="filterRes('paper',this)">📄 Papers</button>
+    <button class="filter-btn" onclick="filterRes('tool',this)">🔧 Tools</button>
+    <button class="filter-btn" onclick="filterRes('video',this)">🎬 Videos</button>
+  </div>
+
+  <!-- GITHUB REPOS -->
+  <div class="category-header">⭐ GitHub Repositories</div>
+  <div class="resource-grid" id="repoGrid">
+
+    <a href="https://github.com/microsoft/generative-ai-for-beginners" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · Microsoft</span>
+      <div class="res-title">Generative AI for Beginners</div>
+      <div class="res-desc">18-lesson curriculum covering GenAI fundamentals. Code in Python and TypeScript. Perfect starting point with hands-on projects.</div>
+      <div class="res-meta"><span class="res-star">⭐ 68k+</span><span>Python / TypeScript</span><span>Beginner</span></div>
+    </a>
+
+    <a href="https://github.com/rasbt/LLMs-from-scratch" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · rasbt</span>
+      <div class="res-title">LLMs From Scratch</div>
+      <div class="res-desc">Build a GPT-like large language model from scratch in PyTorch. Companion code for the O'Reilly book. Extremely thorough.</div>
+      <div class="res-meta"><span class="res-star">⭐ 37k+</span><span>PyTorch</span><span>Intermediate</span></div>
+    </a>
+
+    <a href="https://github.com/langchain-ai/langchain" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · LangChain</span>
+      <div class="res-title">LangChain</div>
+      <div class="res-desc">The framework for building LLM applications, RAG pipelines, and agents. Massive ecosystem of integrations.</div>
+      <div class="res-meta"><span class="res-star">⭐ 91k+</span><span>Python / JS</span><span>All Levels</span></div>
+    </a>
+
+    <a href="https://github.com/openai/openai-cookbook" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · OpenAI</span>
+      <div class="res-title">OpenAI Cookbook</div>
+      <div class="res-desc">Practical examples and guides for working with OpenAI APIs. RAG, embeddings, fine-tuning, function calling — all covered.</div>
+      <div class="res-meta"><span class="res-star">⭐ 59k+</span><span>Python</span><span>Practical</span></div>
+    </a>
+
+    <a href="https://github.com/aishwaryanr/awesome-generative-ai-guide" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · aishwaryanr</span>
+      <div class="res-title">Awesome Generative AI Guide</div>
+      <div class="res-desc">Comprehensive roadmap with research papers, interview prep, free courses, and weekly updates. A living curriculum.</div>
+      <div class="res-meta"><span class="res-star">⭐ 12k+</span><span>Curated</span><span>All Levels</span></div>
+    </a>
+
+    <a href="https://github.com/Hannibal046/Awesome-LLM" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · Hannibal046</span>
+      <div class="res-title">Awesome LLM</div>
+      <div class="res-desc">Curated list of LLM papers, training frameworks, deployment tools, and evaluation benchmarks. Constantly updated.</div>
+      <div class="res-meta"><span class="res-star">⭐ 16k+</span><span>Research</span><span>Advanced</span></div>
+    </a>
+
+    <a href="https://github.com/huggingface/transformers" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · HuggingFace</span>
+      <div class="res-title">🤗 Transformers</div>
+      <div class="res-desc">The go-to library for state-of-the-art NLP models. Access thousands of pretrained models for any task.</div>
+      <div class="res-meta"><span class="res-star">⭐ 134k+</span><span>PyTorch / TF / JAX</span><span>All Levels</span></div>
+    </a>
+
+    <a href="https://github.com/microsoft/autogen" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · Microsoft</span>
+      <div class="res-title">AutoGen</div>
+      <div class="res-desc">Framework for building multi-agent conversational AI applications. Orchestrate LLM agents to solve complex tasks together.</div>
+      <div class="res-meta"><span class="res-star">⭐ 34k+</span><span>Python</span><span>Intermediate</span></div>
+    </a>
+
+    <a href="https://github.com/langchain-ai/langgraph" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · LangChain</span>
+      <div class="res-title">LangGraph</div>
+      <div class="res-desc">Build stateful, multi-actor AI applications. Create complex agentic workflows as directed graphs with cycles and conditions.</div>
+      <div class="res-meta"><span class="res-star">⭐ 10k+</span><span>Python</span><span>Intermediate</span></div>
+    </a>
+
+    <a href="https://github.com/chroma-core/chroma" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · Chroma</span>
+      <div class="res-title">Chroma — Vector Database</div>
+      <div class="res-desc">The open-source embedding database. Easy to set up locally for RAG prototypes. Add semantic search to any app in minutes.</div>
+      <div class="res-meta"><span class="res-star">⭐ 15k+</span><span>Python</span><span>RAG</span></div>
+    </a>
+
+    <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · AUTOMATIC1111</span>
+      <div class="res-title">Stable Diffusion WebUI</div>
+      <div class="res-desc">The most popular local UI for running Stable Diffusion image generation models. Massive community of extensions.</div>
+      <div class="res-meta"><span class="res-star">⭐ 143k+</span><span>Python</span><span>GenAI</span></div>
+    </a>
+
+    <a href="https://github.com/karpathy/nanoGPT" target="_blank" class="res-card" data-cat="github">
+      <span class="res-badge badge-github">⭐ GitHub · karpathy</span>
+      <div class="res-title">nanoGPT</div>
+      <div class="res-desc">The simplest, fastest repository for training/finetuning medium-sized GPTs. By Andrej Karpathy. ~300 lines of code.</div>
+      <div class="res-meta"><span class="res-star">⭐ 37k+</span><span>PyTorch</span><span>Learning</span></div>
+    </a>
+
+  </div>
+
+  <!-- COURSES -->
+  <div class="category-header">📚 Free Courses</div>
+  <div class="resource-grid">
+
+    <a href="https://www.deeplearning.ai/courses/chatgpt-prompt-engineering-for-developers/" target="_blank" class="res-card" data-cat="course">
+      <span class="res-badge badge-course">📚 Course · DeepLearning.AI</span>
+      <div class="res-title">ChatGPT Prompt Engineering for Developers</div>
+      <div class="res-desc">Andrew Ng + OpenAI. Learn prompting best practices for building LLM applications. Free, practical, ~1 hour.</div>
+      <div class="res-meta"><span>Free</span><span>Beginner</span><span>1 hour</span></div>
+    </a>
+
+    <a href="https://www.deeplearning.ai/courses/langchain-chat-with-your-data/" target="_blank" class="res-card" data-cat="course">
+      <span class="res-badge badge-course">📚 Course · DeepLearning.AI</span>
+      <div class="res-title">LangChain: Chat with Your Data (RAG)</div>
+      <div class="res-desc">Build RAG pipelines from scratch with LangChain. Covers document loading, splitting, embedding, retrieval, and generation.</div>
+      <div class="res-meta"><span>Free</span><span>Intermediate</span><span>2 hours</span></div>
+    </a>
+
+    <a href="https://huggingface.co/learn/nlp-course/chapter1/1" target="_blank" class="res-card" data-cat="course">
+      <span class="res-badge badge-course">📚 Course · HuggingFace</span>
+      <div class="res-title">HuggingFace NLP Course</div>
+      <div class="res-desc">Deep dive into transformers with HuggingFace. Covers text classification, NER, summarization, translation, and fine-tuning.</div>
+      <div class="res-meta"><span>Free</span><span>Intermediate</span><span>Self-paced</span></div>
+    </a>
+
+    <a href="https://www.fast.ai/" target="_blank" class="res-card" data-cat="course">
+      <span class="res-badge badge-course">📚 Course · fast.ai</span>
+      <div class="res-title">Practical Deep Learning for Coders</div>
+      <div class="res-desc">Top-down approach to deep learning. Jeremy Howard's legendary course. Get results first, understand theory second.</div>
+      <div class="res-meta"><span>Free</span><span>All Levels</span><span>20+ hours</span></div>
+    </a>
+
+    <a href="https://www.deeplearning.ai/courses/ai-agents-in-langgraph/" target="_blank" class="res-card" data-cat="course">
+      <span class="res-badge badge-course">📚 Course · DeepLearning.AI</span>
+      <div class="res-title">AI Agents in LangGraph</div>
+      <div class="res-desc">Build agentic applications using LangGraph. Covers agent architectures, human-in-the-loop, and multi-agent patterns.</div>
+      <div class="res-meta"><span>Free</span><span>Intermediate</span><span>3 hours</span></div>
+    </a>
+
+    <a href="https://www.coursera.org/specializations/machine-learning-introduction" target="_blank" class="res-card" data-cat="course">
+      <span class="res-badge badge-course">📚 Course · Coursera / Andrew Ng</span>
+      <div class="res-title">Machine Learning Specialization</div>
+      <div class="res-desc">Andrew Ng's updated ML course. Covers supervised learning, neural networks, decision trees, and recommender systems.</div>
+      <div class="res-meta"><span>Audit Free</span><span>Beginner</span><span>3 months</span></div>
+    </a>
+
+  </div>
+
+  <!-- PAPERS -->
+  <div class="category-header">📄 Landmark Papers</div>
+  <div class="resource-grid">
+
+    <a href="https://arxiv.org/abs/1706.03762" target="_blank" class="res-card" data-cat="paper">
+      <span class="res-badge badge-paper">📄 Paper · 2017</span>
+      <div class="res-title">Attention Is All You Need</div>
+      <div class="res-desc">The original transformer paper by Vaswani et al. Introduced the architecture that powers all modern LLMs. Required reading.</div>
+      <div class="res-meta"><span>Google Brain</span><span>58k+ citations</span></div>
+    </a>
+
+    <a href="https://arxiv.org/abs/2005.11401" target="_blank" class="res-card" data-cat="paper">
+      <span class="res-badge badge-paper">📄 Paper · 2020</span>
+      <div class="res-title">RAG: Retrieval-Augmented Generation</div>
+      <div class="res-desc">The original RAG paper from Meta AI. Introduced the paradigm of combining retrieval with seq2seq generation.</div>
+      <div class="res-meta"><span>Meta AI</span><span>Foundational</span></div>
+    </a>
+
+    <a href="https://arxiv.org/abs/2210.11610" target="_blank" class="res-card" data-cat="paper">
+      <span class="res-badge badge-paper">📄 Paper · 2022</span>
+      <div class="res-title">ReAct: Reasoning + Acting in LLMs</div>
+      <div class="res-desc">Introduced the ReAct prompting strategy for interleaving reasoning traces and actions in LLM agents.</div>
+      <div class="res-meta"><span>Google / Princeton</span><span>Agents</span></div>
+    </a>
+
+    <a href="https://arxiv.org/abs/2112.10752" target="_blank" class="res-card" data-cat="paper">
+      <span class="res-badge badge-paper">📄 Paper · 2021</span>
+      <div class="res-title">High-Resolution Image Synthesis with Latent Diffusion</div>
+      <div class="res-desc">The paper behind Stable Diffusion. Introduces latent diffusion models — run diffusion in compressed latent space.</div>
+      <div class="res-meta"><span>Runway / Heidelberg</span><span>GenAI</span></div>
+    </a>
+
+    <a href="https://arxiv.org/abs/2303.08774" target="_blank" class="res-card" data-cat="paper">
+      <span class="res-badge badge-paper">📄 Paper · 2023</span>
+      <div class="res-title">GPT-4 Technical Report</div>
+      <div class="res-desc">OpenAI's technical report on GPT-4 capabilities, safety evaluations, and alignment approaches.</div>
+      <div class="res-meta"><span>OpenAI</span><span>LLM</span></div>
+    </a>
+
+    <a href="https://arxiv.org/abs/2201.11903" target="_blank" class="res-card" data-cat="paper">
+      <span class="res-badge badge-paper">📄 Paper · 2022</span>
+      <div class="res-title">Chain-of-Thought Prompting</div>
+      <div class="res-desc">Shows that prompting LLMs to show step-by-step reasoning dramatically improves performance on complex tasks.</div>
+      <div class="res-meta"><span>Google</span><span>Prompting</span></div>
+    </a>
+
+  </div>
+
+  <!-- TOOLS -->
+  <div class="category-header">🔧 Essential Tools</div>
+  <div class="resource-grid">
+
+    <a href="https://platform.openai.com/playground" target="_blank" class="res-card" data-cat="tool">
+      <span class="res-badge badge-tool">🔧 Tool · OpenAI</span>
+      <div class="res-title">OpenAI Playground</div>
+      <div class="res-desc">Interactive playground to experiment with GPT models, adjust parameters, and test prompts. Great for learning.</div>
+      <div class="res-meta"><span>Web-based</span><span>Free tier</span></div>
+    </a>
+
+    <a href="https://claude.ai" target="_blank" class="res-card" data-cat="tool">
+      <span class="res-badge badge-tool">🔧 Tool · Anthropic</span>
+      <div class="res-title">Claude.ai</div>
+      <div class="res-desc">Anthropic's Claude assistant. Excellent for coding, analysis, and long-context tasks. Free tier available.</div>
+      <div class="res-meta"><span>Web + API</span><span>Free tier</span></div>
+    </a>
+
+    <a href="https://colab.research.google.com/" target="_blank" class="res-card" data-cat="tool">
+      <span class="res-badge badge-tool">🔧 Tool · Google</span>
+      <div class="res-title">Google Colab</div>
+      <div class="res-desc">Free Jupyter notebooks with GPU access. Run ML experiments without local setup. Essential for beginners.</div>
+      <div class="res-meta"><span>Free GPU</span><span>Python</span></div>
+    </a>
+
+    <a href="https://huggingface.co/spaces" target="_blank" class="res-card" data-cat="tool">
+      <span class="res-badge badge-tool">🔧 Tool · HuggingFace</span>
+      <div class="res-title">HuggingFace Spaces</div>
+      <div class="res-desc">Try thousands of AI models directly in the browser. Images, text, audio, video — the ultimate AI playground.</div>
+      <div class="res-meta"><span>Free</span><span>All modalities</span></div>
+    </a>
+
+    <a href="https://www.pinecone.io/" target="_blank" class="res-card" data-cat="tool">
+      <span class="res-badge badge-tool">🔧 Tool · Pinecone</span>
+      <div class="res-title">Pinecone Vector Database</div>
+      <div class="res-desc">Managed vector database for production RAG systems. Free starter tier. Used by major AI companies.</div>
+      <div class="res-meta"><span>Free tier</span><span>RAG</span></div>
+    </a>
+
+    <a href="https://wandb.ai/" target="_blank" class="res-card" data-cat="tool">
+      <span class="res-badge badge-tool">🔧 Tool · Weights & Biases</span>
+      <div class="res-title">Weights & Biases</div>
+      <div class="res-desc">MLOps platform for tracking experiments, visualizing training runs, and comparing model versions.</div>
+      <div class="res-meta"><span>Free for individuals</span><span>MLOps</span></div>
+    </a>
+
+  </div>
+
+  <!-- VIDEO -->
+  <div class="category-header">🎬 Video Resources</div>
+  <div class="resource-grid">
+
+    <a href="https://www.youtube.com/watch?v=aircAruvnKk" target="_blank" class="res-card" data-cat="video">
+      <span class="res-badge badge-video">🎬 Video · 3Blue1Brown</span>
+      <div class="res-title">But what is a neural network?</div>
+      <div class="res-desc">The best visual introduction to neural networks ever made. 3Blue1Brown's series is unmissable for beginners.</div>
+      <div class="res-meta"><span>YouTube</span><span>19 min</span><span>Beginner</span></div>
+    </a>
+
+    <a href="https://www.youtube.com/watch?v=bCz4OMemCcA" target="_blank" class="res-card" data-cat="video">
+      <span class="res-badge badge-video">🎬 Video · Andrej Karpathy</span>
+      <div class="res-title">Intro to Large Language Models</div>
+      <div class="res-desc">Andrej Karpathy's 1-hour LLM overview. Covers everything from tokenization to fine-tuning to agent systems.</div>
+      <div class="res-meta"><span>YouTube</span><span>1 hour</span><span>Intermediate</span></div>
+    </a>
+
+    <a href="https://www.youtube.com/@AndrejKarpathy" target="_blank" class="res-card" data-cat="video">
+      <span class="res-badge badge-video">🎬 Channel · Andrej Karpathy</span>
+      <div class="res-title">Andrej Karpathy YouTube Channel</div>
+      <div class="res-desc">Former Tesla AI Director + OpenAI co-founder. Deep technical videos on LLMs, backprop, and building neural nets.</div>
+      <div class="res-meta"><span>YouTube</span><span>Advanced</span></div>
+    </a>
+
+    <a href="https://www.youtube.com/watch?v=wjZofJX0v4M" target="_blank" class="res-card" data-cat="video">
+      <span class="res-badge badge-video">🎬 Video · 3Blue1Brown</span>
+      <div class="res-title">Attention in Transformers, Visually</div>
+      <div class="res-desc">The clearest visual explanation of the attention mechanism. How transformers actually process sequences.</div>
+      <div class="res-meta"><span>YouTube</span><span>26 min</span><span>Intermediate</span></div>
+    </a>
+
+  </div>
+
+</div>
+
+<div class="module-nav">
+  <a href="agentic.html"><span class="nav-dir">← Previous</span><span class="nav-title">Agentic AI</span></a>
+  <a href="index.html" class="next"><span class="nav-dir">↩ Back to</span><span class="nav-title">Home</span></a>
+</div>
+
+<footer>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <p>Links are to external resources. ZombAI-Clarity is not affiliated with any listed organizations.</p>
+  <p style="margin-top:4px;">© 2025 ZombAI-Clarity · Free to learn, free to share</p>
+</footer>
+
+<script>
+function filterRes(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.res-card').forEach(c=>{
+    if(cat==='all'||c.dataset.cat===cat){
+      c.style.display='flex'; c.style.opacity='1';
+    } else {
+      c.style.display='none';
+    }
+  });
+}
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*60);});},{threshold:0.05});
+document.querySelectorAll('.scroll-reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

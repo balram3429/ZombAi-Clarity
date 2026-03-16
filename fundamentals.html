@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Fundamentals | ZombAI-Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .page-title span { background:linear-gradient(90deg,var(--accent),#00C8FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .neuron-demo { display:flex; align-items:center; justify-content:center; gap:20px; padding:30px; flex-wrap:wrap; }
+  .neuron-inputs { display:flex; flex-direction:column; gap:16px; }
+  .neuron-input-item { display:flex; align-items:center; gap:12px; }
+  .input-node {
+    width:44px; height:44px; border-radius:50%;
+    background:#0D1424; border:2px solid var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:0.75rem;
+    color:var(--accent); position:relative;
+  }
+  .weight-label {
+    font-family:'Space Mono',monospace; font-size:0.72rem;
+    color:var(--accent2); background:rgba(255,61,113,0.1);
+    padding:2px 8px; border-radius:4px;
+  }
+  .neuron-body {
+    width:70px; height:70px; border-radius:50%;
+    background:linear-gradient(135deg,rgba(0,255,178,0.15),rgba(0,200,255,0.1));
+    border:2px solid var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:0.7rem;
+    color:var(--accent); text-align:center; line-height:1.3;
+    box-shadow:var(--glow);
+  }
+  .neuron-output {
+    width:44px; height:44px; border-radius:50%;
+    background:rgba(0,255,178,0.15); border:2px solid var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:0.75rem;
+    color:var(--accent);
+  }
+  .arrow { color:var(--muted); font-size:1.2rem; }
+  /* Training loop animation */
+  .training-loop {
+    display:flex; align-items:center; justify-content:center;
+    gap:0; padding:20px; flex-wrap:wrap;
+  }
+  .loop-step {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:8px; padding:14px 18px;
+    font-family:'Space Mono',monospace; font-size:0.75rem;
+    color:var(--text); text-align:center;
+    min-width:100px;
+    transition:all 0.3s;
+  }
+  .loop-step.active {
+    border-color:var(--accent);
+    background:rgba(0,255,178,0.08);
+    color:var(--accent);
+    box-shadow:var(--glow);
+  }
+  .loop-arrow { color:var(--accent); font-size:1.1rem; padding:0 8px; }
+  /* Activation functions */
+  .activation-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin:24px 0; }
+  .act-card {
+    background:#0A0F1E; border:1px solid rgba(255,255,255,0.06);
+    border-radius:8px; padding:20px;
+  }
+  .act-name { font-family:'Space Mono',monospace; font-size:0.8rem; color:var(--accent4); margin-bottom:8px; }
+  .act-formula { font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--muted); margin-bottom:12px; }
+  .act-canvas { width:100%; height:80px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <div class="nav-links">
+    <a href="fundamentals.html" class="active">Fundamentals</a>
+    <a href="llm.html">LLMs</a>
+    <a href="rag.html">RAG</a>
+    <a href="genai.html">Generative AI</a>
+    <a href="agentic.html">Agentic AI</a>
+    <a href="resources.html" class="nav-cta">Resources</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Module 01</div>
+  <h1 class="page-title"><span>AI Fundamentals</span></h1>
+  <p class="page-sub">Before you can understand GPT-4, you need to understand a single neuron. Let's build up from absolute zero.</p>
+</div>
+
+<div class="content-section">
+
+  <!-- WHAT IS A NEURON -->
+  <div class="concept-block scroll-reveal">
+    <h2>🧠 What is an Artificial Neuron?</h2>
+    <p>An artificial neuron is the atom of all neural networks. It receives inputs, multiplies them by weights, sums everything up, passes it through an activation function, and outputs a single value. Billions of these working in layers = modern AI.</p>
+    <div class="anim-container">
+      <div class="anim-label">Live Neuron Model</div>
+      <div class="neuron-demo">
+        <div class="neuron-inputs">
+          <div class="neuron-input-item"><div class="input-node">x₁</div><span class="weight-label">w₁ = 0.8</span></div>
+          <div class="neuron-input-item"><div class="input-node">x₂</div><span class="weight-label">w₂ = -0.3</span></div>
+          <div class="neuron-input-item"><div class="input-node">x₃</div><span class="weight-label">w₃ = 0.5</span></div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="neuron-body">Σ + bias<br><span style="font-size:0.6rem;color:var(--muted)">activation</span></div>
+        <span class="arrow">→</span>
+        <div class="neuron-output">ŷ</div>
+      </div>
+      <canvas id="neuronCanvas" height="120"></canvas>
+    </div>
+    <div class="highlight-box">
+      output = activation( x₁·w₁ + x₂·w₂ + x₃·w₃ + bias )
+    </div>
+  </div>
+
+  <!-- ACTIVATION FUNCTIONS -->
+  <div class="concept-block scroll-reveal">
+    <h2>⚡ Activation Functions</h2>
+    <p>Without activation functions, stacking layers is pointless — the whole network collapses to a linear function. Activations introduce non-linearity so networks can learn complex patterns.</p>
+    <div class="activation-grid">
+      <div class="act-card">
+        <div class="act-name">ReLU</div>
+        <div class="act-formula">f(x) = max(0, x)</div>
+        <canvas class="act-canvas" id="reluCanvas"></canvas>
+      </div>
+      <div class="act-card">
+        <div class="act-name">Sigmoid</div>
+        <div class="act-formula">f(x) = 1/(1+e⁻ˣ)</div>
+        <canvas class="act-canvas" id="sigmoidCanvas"></canvas>
+      </div>
+      <div class="act-card">
+        <div class="act-name">Tanh</div>
+        <div class="act-formula">f(x) = tanh(x)</div>
+        <canvas class="act-canvas" id="tanhCanvas"></canvas>
+      </div>
+      <div class="act-card">
+        <div class="act-name">Softmax</div>
+        <div class="act-formula">eˣᵢ / Σeˣⱼ</div>
+        <canvas class="act-canvas" id="softmaxCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINING LOOP -->
+  <div class="concept-block scroll-reveal">
+    <h2>🔄 The Training Loop</h2>
+    <p>Training is the process of adjusting weights so the network gets better at its task. It cycles through: forward pass → compute loss → backpropagate → update weights. Repeat millions of times.</p>
+    <div class="anim-container" style="padding:30px">
+      <div class="anim-label">Animated Training Loop</div>
+      <div class="training-loop" id="trainingLoop">
+        <div class="loop-step" id="ls0">📥 Forward Pass<br><small style="color:var(--muted)">Input → Output</small></div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step" id="ls1">📊 Compute Loss<br><small style="color:var(--muted)">Error measure</small></div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step" id="ls2">↩ Backprop<br><small style="color:var(--muted)">Gradients</small></div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step" id="ls3">⚙ Update Weights<br><small style="color:var(--muted)">Gradient descent</small></div>
+        <div class="loop-arrow">↺</div>
+      </div>
+      <canvas id="lossCanvas" height="130" style="margin-top:20px"></canvas>
+      <div style="text-align:center; font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--muted); margin-top:8px;">Loss decreasing over training epochs</div>
+    </div>
+  </div>
+
+  <!-- GRADIENT DESCENT -->
+  <div class="concept-block scroll-reveal">
+    <h2>📉 Gradient Descent</h2>
+    <p>Gradient descent is how weights are updated. The gradient tells you which direction increases the loss — so you go the opposite direction. The learning rate controls step size.</p>
+    <div class="anim-container">
+      <div class="anim-label">Gradient Descent on Loss Surface</div>
+      <canvas id="gdCanvas" height="220"></canvas>
+    </div>
+    <div class="steps-grid" style="margin-top:24px">
+      <div class="step-card"><div class="step-card-num">1</div><h3>Compute Gradient</h3><p>Partial derivative of loss with respect to each weight — tells us direction of steepest ascent.</p></div>
+      <div class="step-card"><div class="step-card-num">2</div><h3>Subtract Gradient</h3><p>w = w - lr × ∂L/∂w. Move weights in the direction that decreases loss.</p></div>
+      <div class="step-card"><div class="step-card-num">3</div><h3>Repeat Until Convergence</h3><p>Thousands of iterations until loss reaches a minimum. This is the essence of learning.</p></div>
+    </div>
+  </div>
+
+  <!-- LAYERS -->
+  <div class="concept-block scroll-reveal">
+    <h2>🏗 Neural Network Architecture</h2>
+    <p>Neurons are stacked in layers. The more layers, the more abstract representations the network can learn. Deep learning = many layers. Each layer transforms the representation.</p>
+    <div class="anim-container">
+      <div class="anim-label">Deep Neural Network — Animated Forward Pass</div>
+      <canvas id="deepNetCanvas" height="260"></canvas>
+    </div>
+    <div class="info-row">
+      <div class="concept-block" style="margin:0; background:#0A0F1E">
+        <h2 style="font-size:1.1rem">Input Layer</h2>
+        <p>Raw data — pixels, tokens, numbers. No computation here, just receptors.</p>
+      </div>
+      <div class="concept-block" style="margin:0; background:#0A0F1E">
+        <h2 style="font-size:1.1rem">Hidden Layers</h2>
+        <p>Where representations are built. Early layers detect simple features; deeper layers detect complex ones.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="module-nav">
+  <a href="index.html"><span class="nav-dir">← Back to</span><span class="nav-title">Home</span></a>
+  <a href="llm.html" class="next"><span class="nav-dir">Next Module →</span><span class="nav-title">Large Language Models</span></a>
+</div>
+
+<footer>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <p>© 2025 ZombAI-Clarity · Free to learn, free to share</p>
+</footer>
+
+<script>
+// --- Activation function canvases ---
+function drawActivation(canvasId, fn, color) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.offsetWidth || 180, H = 80;
+  c.width = W; c.height = H;
+  ctx.clearRect(0,0,W,H);
+  ctx.beginPath();
+  for (let px = 0; px < W; px++) {
+    const x = (px / W) * 8 - 4;
+    const y = fn(x);
+    const py = H/2 - y * (H/2.5);
+    if (px === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+  // x axis
+  ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2);
+  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1; ctx.stroke();
+}
+drawActivation('reluCanvas', x => Math.max(0, x), '#00FFB2');
+drawActivation('sigmoidCanvas', x => 1/(1+Math.exp(-x)), '#7B61FF');
+drawActivation('tanhCanvas', x => Math.tanh(x), '#FF3D71');
+drawActivation('softmaxCanvas', x => Math.max(0,Math.min(1,(x+4)/8)), '#FFD60A');
+
+// --- Loss curve animation ---
+const lossCanvas = document.getElementById('lossCanvas');
+const lossCtx = lossCanvas.getContext('2d');
+let lossFrame = 0;
+function drawLoss() {
+  const W = lossCanvas.offsetWidth || 600, H = 130;
+  lossCanvas.width = W;
+  lossCtx.clearRect(0,0,W,H);
+  const pts = Math.floor(lossFrame);
+  const totalPts = 200;
+  lossCtx.beginPath();
+  for (let i = 0; i < Math.min(pts, totalPts); i++) {
+    const x = (i/totalPts) * W;
+    const t = i/totalPts;
+    const loss = 0.9 * Math.exp(-3.5*t) + 0.08 + Math.sin(i*0.8)*0.02*(1-t);
+    const y = H - loss*(H-20) - 10;
+    if(i===0) lossCtx.moveTo(x,y); else lossCtx.lineTo(x,y);
+  }
+  lossCtx.strokeStyle='#00FFB2'; lossCtx.lineWidth=2.5; lossCtx.stroke();
+  // Gradient fill
+  if(pts > 1) {
+    const grad = lossCtx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'rgba(0,255,178,0.15)');
+    grad.addColorStop(1,'rgba(0,255,178,0)');
+    lossCtx.beginPath();
+    for (let i = 0; i < Math.min(pts, totalPts); i++) {
+      const x = (i/totalPts)*W;
+      const t = i/totalPts;
+      const loss = 0.9*Math.exp(-3.5*t)+0.08+Math.sin(i*0.8)*0.02*(1-t);
+      const y = H-loss*(H-20)-10;
+      if(i===0) lossCtx.moveTo(x,y); else lossCtx.lineTo(x,y);
+    }
+    lossCtx.lineTo(Math.min(pts/totalPts,1)*W,H);
+    lossCtx.lineTo(0,H); lossCtx.closePath();
+    lossCtx.fillStyle=grad; lossCtx.fill();
+  }
+  // Axis
+  lossCtx.beginPath(); lossCtx.moveTo(0,H-2); lossCtx.lineTo(W,H-2);
+  lossCtx.strokeStyle='rgba(255,255,255,0.1)'; lossCtx.lineWidth=1; lossCtx.stroke();
+  if (lossFrame < totalPts) lossFrame += 1.5;
+  else lossFrame = 0;
+  requestAnimationFrame(drawLoss);
+}
+drawLoss();
+
+// --- Training loop highlight ---
+let loopStep = 0;
+const loopSteps = ['ls0','ls1','ls2','ls3'];
+setInterval(() => {
+  loopSteps.forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(loopSteps[loopStep]).classList.add('active');
+  loopStep = (loopStep + 1) % loopSteps.length;
+}, 900);
+
+// --- Gradient Descent animation ---
+const gdCanvas = document.getElementById('gdCanvas');
+const gdCtx = gdCanvas.getContext('2d');
+let gdBall = { x: 0.1, vx: 0 };
+function lossFunc(x) { return 0.8*(x-0.6)*(x-0.6)*(x+0.2) + 0.05; }
+function lossFuncGrad(x) { return 0.8*(3*x*x - 1.6*x - 0.36) + 0.001*(x-0.5); }
+
+function drawGD() {
+  const W = gdCanvas.offsetWidth || 700, H = 220;
+  gdCanvas.width = W; gdCanvas.height = H;
+  gdCtx.clearRect(0,0,W,H);
+  // Draw curve
+  gdCtx.beginPath();
+  for (let px = 0; px < W; px++) {
+    const x = px/W;
+    const y = H - 20 - lossFunc(x)*(H-50);
+    if(px===0) gdCtx.moveTo(px,y); else gdCtx.lineTo(px,y);
+  }
+  gdCtx.strokeStyle='rgba(0,255,178,0.6)'; gdCtx.lineWidth=2; gdCtx.stroke();
+  // Fill under
+  gdCtx.beginPath();
+  for(let px=0;px<W;px++){const x=px/W;const y=H-20-lossFunc(x)*(H-50);if(px===0)gdCtx.moveTo(px,y);else gdCtx.lineTo(px,y);}
+  gdCtx.lineTo(W,H); gdCtx.lineTo(0,H); gdCtx.closePath();
+  const g=gdCtx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(0,255,178,0.07)'); g.addColorStop(1,'rgba(0,255,178,0)');
+  gdCtx.fillStyle=g; gdCtx.fill();
+  // Move ball
+  const lr = 0.008;
+  gdBall.x -= lr * lossFuncGrad(gdBall.x);
+  if (gdBall.x < 0.05 || gdBall.x > 0.95) gdBall.x = 0.1 + Math.random()*0.3;
+  // Draw ball
+  const bx = gdBall.x * W;
+  const by = H - 20 - lossFunc(gdBall.x)*(H-50);
+  const glow = gdCtx.createRadialGradient(bx,by,0,bx,by,18);
+  glow.addColorStop(0,'rgba(255,61,113,0.4)'); glow.addColorStop(1,'rgba(255,61,113,0)');
+  gdCtx.beginPath(); gdCtx.arc(bx,by,18,0,Math.PI*2);
+  gdCtx.fillStyle=glow; gdCtx.fill();
+  gdCtx.beginPath(); gdCtx.arc(bx,by,6,0,Math.PI*2);
+  gdCtx.fillStyle='#FF3D71'; gdCtx.fill();
+  // Label
+  gdCtx.fillStyle='var(--muted)';
+  gdCtx.font='11px Space Mono,monospace';
+  gdCtx.fillStyle='rgba(255,61,113,0.8)';
+  gdCtx.fillText('← rolling to minimum', bx+12, by-4);
+  requestAnimationFrame(drawGD);
+}
+drawGD();
+
+// --- Deep Net Animation ---
+const dnCanvas = document.getElementById('deepNetCanvas');
+const dnCtx = dnCanvas.getContext('2d');
+const dnLayers = [3,5,6,5,3,2];
+let dnNodes=[], dnConns=[], dnSignals=[];
+
+function setupDN() {
+  const W = dnCanvas.offsetWidth||700, H=260;
+  dnCanvas.width=W; dnCanvas.height=H;
+  dnNodes=[]; dnConns=[];
+  const starts=[];
+  let ni=0;
+  dnLayers.forEach((cnt,li)=>{
+    starts.push(ni);
+    const x=(li/(dnLayers.length-1))*(W-80)+40;
+    for(let i=0;i<cnt;i++){
+      const y=(i/(cnt-1||1))*(H-60)+30;
+      dnNodes.push({x,y,layer:li,glow:0});
+      ni++;
+    }
+  });
+  for(let li=0;li<dnLayers.length-1;li++){
+    for(let a=0;a<dnLayers[li];a++){
+      for(let b=0;b<dnLayers[li+1];b++){
+        dnConns.push({from:starts[li]+a,to:starts[li+1]+b,active:false,progress:-1});
+      }
+    }
+  }
+}
+setupDN();
+
+function fireDN(){
+  const src = Math.floor(Math.random()*dnLayers[0]);
+  dnConns.filter(c=>c.from===src).forEach(c=>{
+    setTimeout(()=>{c.active=true;c.progress=0;},Math.random()*150);
+  });
+}
+setInterval(fireDN,600);
+
+function drawDN(){
+  const W=dnCanvas.width, H=dnCanvas.height;
+  dnCtx.clearRect(0,0,W,H);
+  // Label layers
+  const labels=['Input','Hidden 1','Hidden 2','Hidden 3','Hidden 4','Output'];
+  const colors=['#00FFB2','#00C8FF','#7B61FF','#FF3D71','#FFD60A','#00FFB2'];
+  dnLayers.forEach((cnt,li)=>{
+    const x=(li/(dnLayers.length-1))*(W-80)+40;
+    dnCtx.fillStyle=colors[li];
+    dnCtx.font='10px Space Mono,monospace';
+    dnCtx.textAlign='center';
+    dnCtx.fillText(labels[li],x,H-4);
+  });
+  // Connections
+  dnConns.forEach(c=>{
+    const f=dnNodes[c.from],t=dnNodes[c.to];
+    dnCtx.beginPath(); dnCtx.moveTo(f.x,f.y); dnCtx.lineTo(t.x,t.y);
+    dnCtx.strokeStyle='rgba(255,255,255,0.04)'; dnCtx.lineWidth=0.7; dnCtx.stroke();
+    if(c.active&&c.progress>=0&&c.progress<=1){
+      const px=f.x+(t.x-f.x)*c.progress, py=f.y+(t.y-f.y)*c.progress;
+      const grad=dnCtx.createRadialGradient(px,py,0,px,py,6);
+      grad.addColorStop(0,'rgba(0,255,178,0.95)'); grad.addColorStop(1,'rgba(0,255,178,0)');
+      dnCtx.beginPath(); dnCtx.arc(px,py,5,0,Math.PI*2);
+      dnCtx.fillStyle=grad; dnCtx.fill();
+      dnCtx.beginPath(); dnCtx.moveTo(f.x,f.y); dnCtx.lineTo(px,py);
+      dnCtx.strokeStyle='rgba(0,255,178,0.35)'; dnCtx.lineWidth=1.5; dnCtx.stroke();
+      c.progress+=0.03;
+      if(c.progress>1){c.active=false;c.progress=-1;dnNodes[c.to].glow=1;
+        dnConns.filter(nc=>nc.from===c.to).forEach(nc=>{setTimeout(()=>{nc.active=true;nc.progress=0;},Math.random()*80);});
+      }
+    }
+  });
+  // Nodes
+  const nColors=['#00FFB2','#00C8FF','#7B61FF','#FF3D71','#FFD60A','#00FFB2'];
+  dnNodes.forEach(n=>{
+    const col=nColors[n.layer];
+    if(n.glow>0){
+      const g=dnCtx.createRadialGradient(n.x,n.y,0,n.x,n.y,16);
+      g.addColorStop(0,col.replace('#','rgba(').replace(/^rgba\(/,'rgba(')+'80');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      dnCtx.beginPath(); dnCtx.arc(n.x,n.y,16,0,Math.PI*2);
+      dnCtx.fillStyle=g; dnCtx.fill();
+      n.glow-=0.05;
+    }
+    dnCtx.beginPath(); dnCtx.arc(n.x,n.y,6,0,Math.PI*2);
+    dnCtx.fillStyle='#0D1424'; dnCtx.fill();
+    dnCtx.strokeStyle=col+(n.glow>0?'':'88');
+    dnCtx.lineWidth=1.5; dnCtx.stroke();
+    dnCtx.beginPath(); dnCtx.arc(n.x,n.y,2,0,Math.PI*2);
+    dnCtx.fillStyle=col+'CC'; dnCtx.fill();
+  });
+  requestAnimationFrame(drawDN);
+}
+drawDN();
+
+// Neuron canvas — signal pulse
+const nc = document.getElementById('neuronCanvas');
+const nctx = nc.getContext('2d');
+let np = 0;
+function drawNeuron(){
+  const W=nc.offsetWidth||600,H=120; nc.width=W;
+  nctx.clearRect(0,0,W,H);
+  const inputs=[{y:30,w:'0.8',col:'#00FFB2'},{y:60,w:'-0.3',col:'#FF3D71'},{y:90,w:'0.5',col:'#7B61FF'}];
+  const cx=W*0.55, cy=60, r=22;
+  inputs.forEach(inp=>{
+    const sx=60;
+    nctx.beginPath(); nctx.moveTo(sx,inp.y); nctx.lineTo(cx-r,cy);
+    nctx.strokeStyle='rgba(255,255,255,0.08)'; nctx.lineWidth=1; nctx.stroke();
+    // Signal dot
+    const t=((np/100)+inputs.indexOf(inp)*0.33)%1;
+    const px=sx+(cx-r-sx)*t, py=inp.y+(cy-inp.y)*t;
+    nctx.beginPath(); nctx.arc(px,py,4,0,Math.PI*2);
+    nctx.fillStyle=inp.col; nctx.fill();
+    // Weight label
+    nctx.font='11px Space Mono,monospace';
+    nctx.fillStyle=inp.col;
+    nctx.fillText('w='+inp.w,(sx+(cx-r-sx)*0.5)-15,inp.y-6);
+  });
+  // Neuron body
+  const grd=nctx.createRadialGradient(cx,cy,0,cx,cy,r);
+  grd.addColorStop(0,'rgba(0,255,178,0.2)'); grd.addColorStop(1,'rgba(0,255,178,0.04)');
+  nctx.beginPath(); nctx.arc(cx,cy,r,0,Math.PI*2);
+  nctx.fillStyle=grd; nctx.fill();
+  nctx.strokeStyle='#00FFB2'; nctx.lineWidth=1.5; nctx.stroke();
+  nctx.fillStyle='#00FFB2'; nctx.font='10px Space Mono,monospace'; nctx.textAlign='center';
+  nctx.fillText('Σ',cx,cy+4);
+  // Output line
+  nctx.beginPath(); nctx.moveTo(cx+r,cy); nctx.lineTo(W-60,cy);
+  nctx.strokeStyle='rgba(0,255,178,0.3)'; nctx.lineWidth=1.5; nctx.stroke();
+  const ot=((np/100)+0.5)%1;
+  const opx=(cx+r)+(W-60-cx-r)*ot;
+  nctx.beginPath(); nctx.arc(opx,cy,5,0,Math.PI*2);
+  nctx.fillStyle='#FFD60A'; nctx.fill();
+  np=(np+0.8)%100;
+  requestAnimationFrame(drawNeuron);
+}
+drawNeuron();
+
+// Scroll reveal
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*100);});},{threshold:0.1});
+document.querySelectorAll('.scroll-reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

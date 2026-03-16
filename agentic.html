@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI | ZombAI-Clarity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .page-title span { background:linear-gradient(90deg,var(--accent),#00C8FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .agent-log {
+    background:#030609; border:1px solid rgba(0,255,178,0.15);
+    border-radius:8px; padding:20px; font-family:'Space Mono',monospace;
+    font-size:0.78rem; line-height:1.8; max-height:300px; overflow-y:auto;
+  }
+  .log-line { display:flex; gap:10px; margin-bottom:2px; }
+  .log-type { min-width:90px; }
+  .log-thought { color: #7B61FF; }
+  .log-action { color: #FFD60A; }
+  .log-observation { color: #00C8FF; }
+  .log-answer { color: #00FFB2; font-weight:bold; }
+  .tool-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin:24px 0; }
+  .tool-card {
+    background:#0A0F1E; border:1px solid rgba(0,255,178,0.1);
+    border-radius:8px; padding:18px; text-align:center;
+    transition:all 0.3s;
+  }
+  .tool-card:hover { border-color:var(--accent); transform:translateY(-3px); }
+  .tool-icon { font-size:1.8rem; margin-bottom:8px; }
+  .tool-name { font-family:'Space Mono',monospace; font-size:0.78rem; color:var(--accent); margin-bottom:4px; }
+  .tool-desc { color:var(--muted); font-size:0.75rem; line-height:1.4; }
+  .agent-types { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; margin:24px 0; }
+  .agent-type-card {
+    background:var(--card); border:1px solid rgba(255,255,255,0.06);
+    border-radius:12px; padding:28px;
+  }
+  .agent-type-tag {
+    font-family:'Space Mono',monospace; font-size:0.68rem;
+    text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;
+  }
+  .agent-type-name { font-family:'Syne',sans-serif; font-weight:700; font-size:1.2rem; margin-bottom:8px; }
+  .agent-type-desc { color:var(--muted); font-size:0.85rem; line-height:1.6; }
+  .cursor { display:inline-block; width:8px; height:14px; background:var(--accent); animation:blink 1s infinite; vertical-align:middle; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <div class="nav-links">
+    <a href="fundamentals.html">Fundamentals</a>
+    <a href="llm.html">LLMs</a>
+    <a href="rag.html">RAG</a>
+    <a href="genai.html">Generative AI</a>
+    <a href="agentic.html" class="active">Agentic AI</a>
+    <a href="resources.html" class="nav-cta">Resources</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-tag">Module 05</div>
+  <h1 class="page-title"><span>Agentic AI</span></h1>
+  <p class="page-sub">AI that plans, reasons, uses tools, and takes actions in the world. The frontier where models become actors.</p>
+</div>
+
+<div class="content-section">
+
+  <!-- WHAT IS AN AGENT -->
+  <div class="concept-block scroll-reveal">
+    <h2>🤖 What Makes an AI "Agentic"?</h2>
+    <p>A standard LLM responds to a prompt. An agent operates in a loop: it receives a task, reasons about what to do, takes an action (calling a tool, running code, searching the web), observes the result, and iterates until the task is complete. The LLM is the brain; tools are its hands.</p>
+    <div class="anim-container">
+      <div class="anim-label">Agentic Loop Animation</div>
+      <canvas id="agentLoopCanvas" height="280"></canvas>
+    </div>
+  </div>
+
+  <!-- REACT FRAMEWORK -->
+  <div class="concept-block scroll-reveal">
+    <h2>🧠 ReAct — Reason + Act</h2>
+    <p>ReAct (Reasoning + Acting) is the foundational pattern for agents. The model interleaves Thought → Action → Observation in a loop. This lets it break complex tasks into steps, correct errors, and use tools strategically.</p>
+    <div class="anim-container" style="padding:20px">
+      <div class="anim-label">Live ReAct Loop Simulation</div>
+      <div class="agent-log" id="agentLog"></div>
+    </div>
+    <div class="highlight-box">
+      Thought: [reasoning about what to do]<br>
+      Action: tool_name[input]<br>
+      Observation: [result from tool]<br>
+      ... (repeat) ...<br>
+      Final Answer: [task complete]
+    </div>
+  </div>
+
+  <!-- TOOLS -->
+  <div class="concept-block scroll-reveal">
+    <h2>🔧 Tools — The Agent's Capabilities</h2>
+    <p>Tools are functions the agent can call. Each tool has a name, description, and input schema. The LLM decides which tools to call based on its reasoning. Tools can be anything from web search to code execution to database queries.</p>
+    <div class="tool-grid">
+      <div class="tool-card"><div class="tool-icon">🔍</div><div class="tool-name">web_search</div><div class="tool-desc">Search the internet for current information</div></div>
+      <div class="tool-card"><div class="tool-icon">💻</div><div class="tool-name">code_exec</div><div class="tool-desc">Run Python/JS code in a sandbox</div></div>
+      <div class="tool-card"><div class="tool-icon">📁</div><div class="tool-name">file_system</div><div class="tool-desc">Read, write, create files and directories</div></div>
+      <div class="tool-card"><div class="tool-icon">🌐</div><div class="tool-name">web_browser</div><div class="tool-desc">Navigate, click, fill forms on the web</div></div>
+      <div class="tool-card"><div class="tool-icon">🗄️</div><div class="tool-name">database</div><div class="tool-desc">Query SQL/NoSQL databases</div></div>
+      <div class="tool-card"><div class="tool-icon">📡</div><div class="tool-name">api_call</div><div class="tool-desc">Call external APIs and services</div></div>
+      <div class="tool-card"><div class="tool-icon">🧠</div><div class="tool-name">memory</div><div class="tool-desc">Read/write long-term agent memory</div></div>
+      <div class="tool-card"><div class="tool-icon">🤖</div><div class="tool-name">sub_agent</div><div class="tool-desc">Spawn and delegate to other agents</div></div>
+    </div>
+  </div>
+
+  <!-- MULTI-AGENT -->
+  <div class="concept-block scroll-reveal">
+    <h2>🕸 Multi-Agent Systems</h2>
+    <p>Complex tasks are too big for one agent. Multi-agent systems use an orchestrator that delegates to specialist sub-agents. Each sub-agent has focused tools and expertise. The orchestrator synthesizes results into a coherent output.</p>
+    <div class="anim-container">
+      <div class="anim-label">Multi-Agent Orchestration</div>
+      <canvas id="multiAgentCanvas" height="260"></canvas>
+    </div>
+  </div>
+
+  <!-- AGENT TYPES -->
+  <div class="concept-block scroll-reveal">
+    <h2>🏷 Types of Agentic Systems</h2>
+    <div class="agent-types">
+      <div class="agent-type-card">
+        <div class="agent-type-tag" style="color:#00FFB2">Tool-Use Agent</div>
+        <div class="agent-type-name">Function Calling</div>
+        <div class="agent-type-desc">LLM that can call predefined tools. Examples: OpenAI function calling, Claude tool use, LangChain agents.</div>
+      </div>
+      <div class="agent-type-card">
+        <div class="agent-type-tag" style="color:#7B61FF">Autonomous Agent</div>
+        <div class="agent-type-name">AutoGPT / BabyAGI</div>
+        <div class="agent-type-desc">Self-directed agent that breaks goals into tasks, executes them, and creates new tasks based on results.</div>
+      </div>
+      <div class="agent-type-card">
+        <div class="agent-type-tag" style="color:#FF3D71">Multi-Agent</div>
+        <div class="agent-type-name">Orchestrator + Specialists</div>
+        <div class="agent-type-desc">LangGraph, CrewAI, AutoGen. One coordinator agent routes tasks to specialist agents with specific tools.</div>
+      </div>
+      <div class="agent-type-card">
+        <div class="agent-type-tag" style="color:#FFD60A">Computer Use</div>
+        <div class="agent-type-name">GUI Agent</div>
+        <div class="agent-type-desc">Agent that sees a screen and controls mouse/keyboard. Claude Computer Use, Operator. Takes actions in real software.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANNING -->
+  <div class="concept-block scroll-reveal">
+    <h2>📋 Planning in Agents</h2>
+    <p>Advanced agents don't just react — they plan ahead. Planning techniques include Chain-of-Thought (step-by-step reasoning), Tree-of-Thought (exploring multiple reasoning branches), and task decomposition (breaking complex goals into subtasks).</p>
+    <div class="anim-container">
+      <div class="anim-label">Tree of Thought — Exploring Reasoning Branches</div>
+      <canvas id="totCanvas" height="240"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<div class="module-nav">
+  <a href="genai.html"><span class="nav-dir">← Previous</span><span class="nav-title">Generative AI</span></a>
+  <a href="resources.html" class="next"><span class="nav-dir">Next →</span><span class="nav-title">Resource Hub</span></a>
+</div>
+
+<footer>
+  <a href="index.html" class="logo">Zomb<span>AI</span>-Clarity</a>
+  <p>© 2025 ZombAI-Clarity · Free to learn, free to share</p>
+</footer>
+
+<script>
+// Agent loop animation
+const alCanvas=document.getElementById('agentLoopCanvas');
+const alCtx=alCanvas.getContext('2d');
+const loopNodes=[
+  {label:'Task\nInput',color:'#FFD60A',angle:Math.PI*1.5},
+  {label:'Think\n(LLM)',color:'#7B61FF',angle:0},
+  {label:'Act\n(Tool)',color:'#FF3D71',angle:Math.PI*0.5},
+  {label:'Observe\n(Result)',color:'#00C8FF',angle:Math.PI},
+];
+let alStep=0,alProgress=0;
+function drawAgentLoop(){
+  const W=alCanvas.offsetWidth||700,H=280; alCanvas.width=W; alCanvas.height=H;
+  alCtx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2,r=90;
+  // Draw circle track
+  alCtx.beginPath(); alCtx.arc(cx,cy,r,0,Math.PI*2);
+  alCtx.strokeStyle='rgba(255,255,255,0.06)'; alCtx.lineWidth=2; alCtx.stroke();
+  // Animated dot on track
+  const dotAngle=Math.PI*1.5+(alProgress/loopNodes.length)*Math.PI*2;
+  const dotX=cx+r*Math.cos(dotAngle),dotY=cy+r*Math.sin(dotAngle);
+  const glowG=alCtx.createRadialGradient(dotX,dotY,0,dotX,dotY,16);
+  glowG.addColorStop(0,'rgba(0,255,178,0.5)'); glowG.addColorStop(1,'rgba(0,255,178,0)');
+  alCtx.beginPath(); alCtx.arc(dotX,dotY,16,0,Math.PI*2); alCtx.fillStyle=glowG; alCtx.fill();
+  alCtx.beginPath(); alCtx.arc(dotX,dotY,6,0,Math.PI*2); alCtx.fillStyle='#00FFB2'; alCtx.fill();
+  // Nodes
+  loopNodes.forEach((n,i)=>{
+    const nx=cx+r*Math.cos(n.angle),ny=cy+r*Math.sin(n.angle);
+    const isActive=i===alStep;
+    const glowR=alCtx.createRadialGradient(nx,ny,0,nx,ny,28);
+    glowR.addColorStop(0,n.color+(isActive?'44':'11')); glowR.addColorStop(1,'rgba(0,0,0,0)');
+    alCtx.beginPath(); alCtx.arc(nx,ny,28,0,Math.PI*2); alCtx.fillStyle=glowR; alCtx.fill();
+    alCtx.beginPath(); alCtx.arc(nx,ny,20,0,Math.PI*2);
+    alCtx.fillStyle='#0D1424'; alCtx.fill();
+    alCtx.strokeStyle=n.color+(isActive?'':'66'); alCtx.lineWidth=isActive?2:1; alCtx.stroke();
+    alCtx.fillStyle=n.color+(isActive?'':'88'); alCtx.font=`${isActive?'bold':''} 9px Space Mono,monospace`; alCtx.textAlign='center';
+    n.label.split('\n').forEach((l,li)=>alCtx.fillText(l,nx,ny-3+li*11));
+  });
+  // Center label
+  alCtx.fillStyle='rgba(255,255,255,0.4)'; alCtx.font='bold 12px Syne,sans-serif'; alCtx.textAlign='center';
+  alCtx.fillText('AGENT',cx,cy-4); alCtx.fillText('LOOP',cx,cy+12);
+  // Arrows
+  loopNodes.forEach((n,i)=>{
+    const next=loopNodes[(i+1)%loopNodes.length];
+    const midAngle=(n.angle+next.angle)/2+(n.angle>next.angle?Math.PI:0);
+    const ax=cx+r*Math.cos(n.angle+(next.angle-n.angle+Math.PI*2)%Math.PI*2*0.7);
+    // skip complex arrow, just arc
+  });
+  alProgress+=0.015;
+  if(alProgress>=loopNodes.length){alProgress=0;}
+  alStep=Math.floor(alProgress)%loopNodes.length;
+  requestAnimationFrame(drawAgentLoop);
+}
+drawAgentLoop();
+
+// ReAct log simulation
+const logDiv=document.getElementById('agentLog');
+const logSequence=[
+  {type:'THOUGHT',cls:'log-thought',text:'I need to find the current population of Tokyo. Let me search for it.'},
+  {type:'ACTION',cls:'log-action',text:'web_search["Tokyo population 2025"]'},
+  {type:'OBS',cls:'log-observation',text:'Tokyo metropolitan area population: ~37.4 million (2025 estimate)'},
+  {type:'THOUGHT',cls:'log-thought',text:'Good. Now I should compare this to New York for context.'},
+  {type:'ACTION',cls:'log-action',text:'web_search["New York City population 2025"]'},
+  {type:'OBS',cls:'log-observation',text:'NYC metro population: ~18.9 million'},
+  {type:'THOUGHT',cls:'log-thought',text:'I have both numbers. Tokyo is ~37.4M vs NYC ~18.9M. I can answer now.'},
+  {type:'ANSWER',cls:'log-answer',text:'Tokyo (37.4M) is approximately twice the size of New York City (18.9M) by metro population.'},
+];
+let logIdx=0, logInterval;
+function addLogLine(entry){
+  const div=document.createElement('div');
+  div.className='log-line';
+  div.innerHTML=`<span class="log-type ${entry.cls}">[${entry.type}]</span><span>${entry.text}</span>`;
+  logDiv.appendChild(div);
+  logDiv.scrollTop=logDiv.scrollHeight;
+}
+function runLog(){
+  if(logIdx<logSequence.length){
+    addLogLine(logSequence[logIdx++]);
+  } else {
+    setTimeout(()=>{logDiv.innerHTML='';logIdx=0;},2000);
+  }
+}
+setInterval(runLog, 1100);
+
+// Multi-agent canvas
+const maCanvas=document.getElementById('multiAgentCanvas');
+const mCtx=maCanvas.getContext('2d');
+const subAgents=[
+  {label:'Research\nAgent',color:'#00C8FF',x:0.2,y:0.75},
+  {label:'Code\nAgent',color:'#FFD60A',x:0.4,y:0.75},
+  {label:'Writer\nAgent',color:'#FF8C42',x:0.6,y:0.75},
+  {label:'QA\nAgent',color:'#7B61FF',x:0.8,y:0.75},
+];
+let maStep=0;
+setInterval(()=>maStep=(maStep+1)%subAgents.length,700);
+function drawMA(){
+  const W=maCanvas.offsetWidth||700,H=260; maCanvas.width=W; maCanvas.height=H;
+  mCtx.clearRect(0,0,W,H);
+  const orch={x:W/2,y:60};
+  // Orchestrator
+  const isAny=true;
+  mCtx.beginPath(); mCtx.arc(orch.x,orch.y,30,0,Math.PI*2);
+  const og=mCtx.createRadialGradient(orch.x,orch.y,0,orch.x,orch.y,30);
+  og.addColorStop(0,'rgba(0,255,178,0.3)'); og.addColorStop(1,'rgba(0,255,178,0.05)');
+  mCtx.fillStyle=og; mCtx.fill();
+  mCtx.strokeStyle='#00FFB2'; mCtx.lineWidth=2; mCtx.stroke();
+  mCtx.fillStyle='#00FFB2'; mCtx.font='bold 10px Space Mono,monospace'; mCtx.textAlign='center';
+  mCtx.fillText('🤖 ORCH',orch.x,orch.y-2); mCtx.fillText('ESTRATOR',orch.x,orch.y+11);
+  subAgents.forEach((sa,i)=>{
+    const sx=sa.x*W, sy=sa.y*H;
+    const isActive=i===maStep;
+    // Line
+    mCtx.beginPath(); mCtx.moveTo(orch.x,orch.y+30); mCtx.lineTo(sx,sy-22);
+    mCtx.strokeStyle=isActive?sa.color:'rgba(255,255,255,0.08)'; mCtx.lineWidth=isActive?2:1;
+    mCtx.setLineDash(isActive?[]:[4,4]); mCtx.stroke(); mCtx.setLineDash([]);
+    // Dot on line
+    if(isActive){
+      const t=(Date.now()%800)/800;
+      const dx=orch.x+(sx-orch.x)*t, dy=(orch.y+30)+(sy-22-orch.y-30)*t;
+      mCtx.beginPath(); mCtx.arc(dx,dy,5,0,Math.PI*2);
+      mCtx.fillStyle=sa.color; mCtx.fill();
+    }
+    // Node
+    mCtx.beginPath(); mCtx.arc(sx,sy,22,0,Math.PI*2);
+    mCtx.fillStyle=isActive?sa.color+'22':'rgba(255,255,255,0.03)';
+    mCtx.strokeStyle=sa.color+(isActive?'':'55'); mCtx.lineWidth=isActive?2:1;
+    mCtx.fill(); mCtx.stroke();
+    mCtx.fillStyle=sa.color+(isActive?'':'99'); mCtx.font=`${isActive?'bold':''} 8.5px Space Mono,monospace`; mCtx.textAlign='center';
+    sa.label.split('\n').forEach((l,li)=>mCtx.fillText(l,sx,sy-3+li*11));
+    // Tools below
+    ['🔍','💻','📝','✅'][i] && (() => {
+      mCtx.fillStyle='rgba(255,255,255,0.2)'; mCtx.font='14px sans-serif';
+      mCtx.fillText(['🔍','💻','📝','✅'][i],sx,sy+40);
+    })();
+  });
+  requestAnimationFrame(drawMA);
+}
+drawMA();
+
+// Tree of Thought canvas
+const totCanvas=document.getElementById('totCanvas');
+const tCtx=totCanvas.getContext('2d');
+let totHighlight=0;
+const totTree = {
+  label:'Goal',x:0.5,y:0.1,color:'#00FFB2',
+  children:[
+    {label:'Plan A',x:0.2,y:0.4,color:'#7B61FF',score:0.7,
+      children:[
+        {label:'A.1',x:0.1,y:0.7,color:'#7B61FF',score:0.8},
+        {label:'A.2',x:0.25,y:0.7,color:'#7B61FF',score:0.4},
+      ]},
+    {label:'Plan B',x:0.5,y:0.4,color:'#FF8C42',score:0.85,
+      children:[
+        {label:'B.1 ✓',x:0.4,y:0.7,color:'#00FFB2',score:0.95},
+        {label:'B.2',x:0.55,y:0.7,color:'#FF8C42',score:0.6},
+      ]},
+    {label:'Plan C',x:0.8,y:0.4,color:'#FF3D71',score:0.3,
+      children:[
+        {label:'C.1',x:0.7,y:0.7,color:'#FF3D71',score:0.2},
+        {label:'C.2',x:0.85,y:0.7,color:'#FF3D71',score:0.35},
+      ]},
+  ]
+};
+let totHighlightPath=0;
+const totPaths=[[0],[1],[2],[1,0],[1,1]];
+setInterval(()=>totHighlightPath=(totHighlightPath+1)%totPaths.length,800);
+function drawTOT(){
+  const W=totCanvas.offsetWidth||700,H=240; totCanvas.width=W; totCanvas.height=H;
+  tCtx.clearRect(0,0,W,H);
+  function drawNode(n,parent){
+    const nx=n.x*W, ny=n.y*H;
+    if(parent){
+      const px=parent.x*W, py=parent.y*H;
+      tCtx.beginPath(); tCtx.moveTo(px,py+14); tCtx.lineTo(nx,ny-14);
+      tCtx.strokeStyle='rgba(255,255,255,0.1)'; tCtx.lineWidth=1; tCtx.stroke();
+    }
+    tCtx.beginPath(); tCtx.arc(nx,ny,14,0,Math.PI*2);
+    tCtx.fillStyle=n.color+'22'; tCtx.strokeStyle=n.color; tCtx.lineWidth=1.5;
+    tCtx.fill(); tCtx.stroke();
+    tCtx.fillStyle=n.color; tCtx.font='bold 9px Space Mono,monospace'; tCtx.textAlign='center';
+    tCtx.fillText(n.label,nx,ny+3);
+    if(n.score){
+      tCtx.fillStyle='rgba(255,255,255,0.3)'; tCtx.font='8px Inter,sans-serif';
+      tCtx.fillText(n.score.toFixed(1),nx,ny+24);
+    }
+    if(n.children) n.children.forEach(c=>drawNode(c,n));
+  }
+  drawNode(totTree,null);
+  // Highlight best path
+  tCtx.beginPath();
+  tCtx.moveTo(totTree.x*W,totTree.y*H+14);
+  const best=totTree.children[1];
+  tCtx.lineTo(best.x*W,best.y*H-14);
+  const bestChild=best.children[0];
+  tCtx.moveTo(best.x*W,best.y*H+14);
+  tCtx.lineTo(bestChild.x*W,bestChild.y*H-14);
+  tCtx.strokeStyle='rgba(0,255,178,0.5)'; tCtx.lineWidth=2.5; tCtx.stroke();
+  tCtx.fillStyle='rgba(255,255,255,0.4)'; tCtx.font='10px Space Mono,monospace'; tCtx.textAlign='left';
+  tCtx.fillText('← Best path',bestChild.x*W+20,bestChild.y*H);
+  requestAnimationFrame(drawTOT);
+}
+drawTOT();
+
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*100);});},{threshold:0.1});
+document.querySelectorAll('.scroll-reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
